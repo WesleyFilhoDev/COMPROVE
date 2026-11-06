@@ -1,3 +1,20 @@
+export function maskCpf(value: string): string {
+  const d = value.replace(/\D/g, "").slice(0, 11);
+  return d.replace(/^(\d{3})(\d{3})(\d{3})(\d{0,2})/, "$1.$2.$3-$4");
+}
+
+export function validateCpf(cpf: string): boolean {
+  const d = cpf.replace(/\D/g, "");
+  if (d.length !== 11 || /^(\d)\1+$/.test(d)) return false;
+  const calc = (s: string, w: number[]) => w.reduce((a, v, i) => a + parseInt(s[i]) * v, 0);
+  const r1 = calc(d, [10, 9, 8, 7, 6, 5, 4, 3, 2]) % 11;
+  const r2 = calc(d, [11, 10, 9, 8, 7, 6, 5, 4, 3, 2]) % 11;
+  return (
+    parseInt(d[9]) === (r1 < 2 ? 0 : 11 - r1) &&
+    parseInt(d[10]) === (r2 < 2 ? 0 : 11 - r2)
+  );
+}
+
 export function validateCnpj(cnpj: string): boolean {
   const digits = cnpj.replace(/\D/g, "");
   if (digits.length !== 14) return false;
