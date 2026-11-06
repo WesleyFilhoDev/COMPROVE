@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import crypto from "crypto";
 import Link from "next/link";
 import { headers } from "next/headers";

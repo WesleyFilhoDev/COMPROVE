@@ -137,10 +137,36 @@
 
   /* ── Charts ── */
   --chart-1: #2a5bff;
-  --chart-2: #6b8fff;
-  --chart-3: #e3ebff;
+  --chart-2: #0b1b3f;
+  --chart-3: #6b8fff;
   --chart-4: #0b7a53;
   --chart-5: #a35400;
+
+  /* ── Brand palette ── */
+  --brand-50: #eef3ff;
+  --brand-100: #e3ebff;
+  --brand-200: #c4d4ff;
+  --brand-300: #9db6ff;
+  --brand-400: #6b8fff;
+  --brand-500: #2a5bff;
+  --brand-600: #1f48db;
+  --brand-700: #1a3ab0;
+  --brand-800: #172f86;
+  --brand-900: #132560;
+  --brand-950: #0b1b3f;
+
+  /* ── Graphite palette ── */
+  --graphite-50: #f4f6fa;
+  --graphite-100: #ebeff5;
+  --graphite-200: #dce2ec;
+  --graphite-300: #c3ccda;
+  --graphite-400: #94a0b4;
+  --graphite-500: #677489;
+  --graphite-600: #4f5c74;
+  --graphite-700: #38445a;
+  --graphite-800: #222d40;
+  --graphite-900: #0f1a2e;
+  --graphite-950: #0a1220;
 }
 
 @layer base {
@@ -165,19 +191,24 @@
   background-size: 48px 48px;
 }
 
+/* ── Landing page links ── */
+.lp-link { color: var(--link); text-decoration: none; font-weight: 500; }
+.lp-link:hover { text-decoration: underline; }
+
 /* ── Landing page nav links ── */
 .lp-navlink {
-  color: var(--sidebar-foreground);
+  color: var(--muted-foreground);
   text-decoration: none;
   font-weight: 500;
   font-size: 14px;
   border-radius: var(--radius-md);
-  padding: 6px 8px;
-  transition: color 0.15s;
+  padding: 8px 4px;
+  transition: color 150ms ease-out;
 }
-.lp-navlink:hover {
-  color: #fff;
-}
+.lp-navlink:hover { color: var(--foreground); }
+.lp-navlink--dark { color: var(--sidebar-foreground); }
+.lp-navlink--dark:hover { color: #fff; }
+.lp-navlink:focus-visible { outline: none; box-shadow: var(--focus-ring); }
 
 /* ── Dark-background text link ── */
 .lp-link-dark {
@@ -279,39 +310,34 @@
   border-color: var(--border);
 }
 
-/* ── FAQ details/summary ── */
-details.faq-item {
-  border-bottom: 1px solid var(--border);
+/* ── FAQ (lp-faq) ── */
+.lp-faq summary { cursor: pointer; list-style: none; }
+.lp-faq summary::-webkit-details-marker { display: none; }
+.lp-faq summary:focus-visible { outline: none; box-shadow: var(--focus-ring); border-radius: var(--radius-md); }
+
+/* ── Responsive nav ── */
+.lp-desktop-nav { display: flex; }
+.lp-mobile-nav { display: none; }
+@media (max-width: 768px) {
+  .lp-desktop-nav { display: none; }
+  .lp-mobile-nav { display: flex; flex-direction: column; width: 100%; }
 }
-details.faq-item summary {
-  list-style: none;
-  cursor: pointer;
-  display: flex;
-  justify-content: space-between;
+
+/* ── Chart hover ── */
+.lp-col { transition: opacity 150ms ease-out; }
+.lp-chart:hover .lp-col { opacity: 0.55; }
+.lp-chart .lp-col:hover { opacity: 1 !important; }
+
+/* ── Avatar initials ── */
+.cpv-avatar {
+  display: inline-flex;
   align-items: center;
-  padding: 20px 0;
-  font-weight: 500;
-  font-size: 15px;
-  color: var(--foreground);
-  gap: 16px;
-}
-details.faq-item summary::-webkit-details-marker {
-  display: none;
-}
-details.faq-item summary::after {
-  content: "+";
-  font-size: 20px;
-  font-weight: 400;
-  color: var(--muted-foreground);
-  flex-shrink: 0;
-  line-height: 1;
-}
-details.faq-item[open] summary::after {
-  content: "−";
-}
-details.faq-item .faq-answer {
-  color: var(--muted-foreground);
-  font-size: 14px;
-  line-height: 1.65;
-  padding-bottom: 20px;
+  justify-content: center;
+  border-radius: var(--radius-full);
+  background: var(--marinho);
+  color: #ffffff;
+  font-family: var(--font-display);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  flex: none;
 }
