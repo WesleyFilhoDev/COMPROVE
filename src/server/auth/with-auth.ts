@@ -10,9 +10,9 @@ export type AuthContext = {
   db: TenantDb | null;
 };
 
-type Handler<T> = (req: NextRequest, ctx: AuthContext) => Promise<NextResponse<T>>;
+type Handler = (req: NextRequest, ctx: AuthContext) => Promise<NextResponse>;
 
-export function withAuth<T>(options: { roles?: UserRole[] }, handler: Handler<T>) {
+export function withAuth(options: { roles?: UserRole[] }, handler: Handler) {
   return async (req: NextRequest): Promise<NextResponse> => {
     const session = await auth.api.getSession({ headers: req.headers });
 
