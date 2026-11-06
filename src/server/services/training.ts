@@ -11,6 +11,7 @@ import { generateVerificationCode, computeContentHash } from "@/lib/training-has
 
 type TrainingErrorCode =
   | "NOT_FOUND"
+  | "COMPANY_INCOMPLETE"
   | "ALREADY_CANCELED"
   | "INVALID_DATES"
   | "INVALID_INSTRUCTOR"
@@ -87,6 +88,12 @@ export async function emitTraining(
   if (!company) {
     throw new TrainingError("Empresa não encontrada.", "NOT_FOUND");
   }
+  if (!company.cnpj) {
+    throw new TrainingError(
+      "Complete o cadastro da empresa com o CNPJ antes de emitir treinamentos.",
+      "COMPANY_INCOMPLETE",
+    );
+  }
 
   // 5. Generate verification code with up to 5 retries on collision
   let verificationCode = "";
@@ -116,7 +123,7 @@ export async function emitTraining(
     instructorJobTitleSnapshot: instructor.jobTitle ?? "",
     trainingTypeNameSnapshot: trainingType.name,
     companyNameSnapshot: company.name,
-    companyCnpjSnapshot: company.cnpj,
+    companyCnpjSnapshot: company.cnpj!,
     templateVersion: 1,
   });
 
@@ -133,7 +140,7 @@ export async function emitTraining(
     instructorJobTitleSnapshot: instructor.jobTitle ?? "",
     trainingTypeNameSnapshot: trainingType.name,
     companyNameSnapshot: company.name,
-    companyCnpjSnapshot: company.cnpj,
+    companyCnpjSnapshot: company.cnpj!,
     verificationCode,
     contentHash,
     templateVersion: 1,

@@ -36,14 +36,15 @@ enum SignatureStatus {
 model Company {
   id            String    @id @default(uuid(7))
   name          String
-  cnpj          String    @unique // só dígitos
-  zipCode       String
-  street        String
-  number        String
+  segment       String?
+  cnpj          String?   @unique // só dígitos; preenchido na configuração da empresa
+  zipCode       String?
+  street        String?
+  number        String?
   complement    String?
-  district      String
-  city          String
-  state         String    @db.Char(2)
+  district      String?
+  city          String?
+  state         String?   @db.VarChar(2)
   deactivatedAt DateTime?
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt

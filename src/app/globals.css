@@ -343,17 +343,50 @@
 .lp-faq summary:focus-visible { outline: none; box-shadow: var(--focus-ring); border-radius: var(--radius-md); }
 
 /* ── Responsive nav ── */
-.lp-desktop-nav { display: flex; }
+.lp-desktop-nav { display: flex; flex-wrap: wrap; align-items: center; gap: 20px; }
 .lp-mobile-nav { display: none; }
 @media (max-width: 768px) {
   .lp-desktop-nav { display: none; }
-  .lp-mobile-nav { display: flex; flex-direction: column; width: 100%; }
+  .lp-mobile-nav { display: flex; align-items: center; position: relative; }
 }
 
 /* ── Chart hover ── */
 .lp-col { transition: opacity 150ms ease-out; }
 .lp-chart:hover .lp-col { opacity: 0.55; }
 .lp-chart .lp-col:hover { opacity: 1 !important; }
+
+/* ── Landing page mobile ── */
+@media (max-width: 768px) {
+  /* Hero */
+  .lp-hero-title { font-size: 32px !important; line-height: 40px !important; }
+  .lp-hero-subtitle { font-size: 16px !important; line-height: 24px !important; }
+
+  /* Section headings */
+  .lp-section-h2 { font-size: 26px !important; line-height: 34px !important; }
+  .lp-step-h3   { font-size: 22px !important; line-height: 30px !important; }
+
+  /* Section padding */
+  .lp-section    { padding-top: 56px !important; padding-bottom: 56px !important; }
+
+  /* Steps 2 e 4: inverter a ordem — ilustração fica abaixo do texto no mobile */
+  .lp-step-flip  { flex-direction: column-reverse !important; }
+
+  /* Hero card: remover padding assimétrico */
+  .lp-hero-card-col { padding: 24px 0 32px !important; }
+
+  /* Step 1: botões empilhados e full-width no mobile */
+  .lp-step1-btns { flex-direction: column !important; }
+  .lp-step1-btns .cpv-btn { width: 100% !important; justify-content: center !important; }
+
+  /* Hero CTA: botão full-width, link centralizado abaixo */
+  .lp-hero-cta { flex-direction: column !important; align-items: stretch !important; gap: 16px !important; }
+  .lp-hero-cta-btn { width: 100% !important; justify-content: center !important; }
+  .lp-hero-cta-link { justify-content: center !important; }
+
+  /* Anatomy: remover borderRight dos itens no mobile (coluna única) */
+  .lp-anatomy-item { border-right: none !important; border-bottom: 1px solid var(--border) !important; }
+  .lp-anatomy-item:last-child { border-bottom: none !important; }
+}
 
 /* ── Avatar initials ── */
 .cpv-avatar {

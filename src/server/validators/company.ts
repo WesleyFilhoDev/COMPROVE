@@ -20,7 +20,6 @@ export const companyCreateSchema = z.object({
     .string()
     .length(2, "Estado deve ter 2 letras")
     .transform((v) => v.toUpperCase()),
-  recaptchaToken: z.string().nullable().optional(),
 });
 
 export type CompanyCreateInput = z.input<typeof companyCreateSchema>;

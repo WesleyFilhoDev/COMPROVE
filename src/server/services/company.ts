@@ -13,7 +13,7 @@ export class CompanyError extends Error {
 
 export async function createCompanyAndPromoteAdmin(
   userId: string,
-  data: Omit<CompanyCreate, "recaptchaToken">,
+  data: CompanyCreate,
 ) {
   const existing = await findCompanyByCnpj(data.cnpj);
   if (existing) throw new CompanyError("CNPJ já cadastrado.", "CNPJ_TAKEN");

@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 import { withAuth } from "@/server/auth/with-auth";
 import { companyCreateSchema } from "@/server/validators/company";
 import { createCompanyAndPromoteAdmin, CompanyError } from "@/server/services/company";
-import { verifyRecaptcha } from "@/lib/recaptcha";
 
 export const POST = withAuth({}, async (req: NextRequest, { user }) => {
   if (user.companyId) {
@@ -19,18 +18,8 @@ export const POST = withAuth({}, async (req: NextRequest, { user }) => {
     return NextResponse.json({ error: parsed.error.flatten() }, { status: 422 });
   }
 
-  const { recaptchaToken, ...data } = parsed.data;
-
-  const captchaOk = await verifyRecaptcha(recaptchaToken ?? null);
-  if (!captchaOk) {
-    return NextResponse.json(
-      { error: "Falha na verificação do reCAPTCHA." },
-      { status: 422 },
-    );
-  }
-
   try {
-    const company = await createCompanyAndPromoteAdmin(user.id, data);
+    const company = await createCompanyAndPromoteAdmin(user.id, parsed.data);
     return NextResponse.json({ company }, { status: 201 });
   } catch (err) {
     if (err instanceof CompanyError) {

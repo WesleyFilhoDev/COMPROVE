@@ -57,7 +57,7 @@ export default function LandingPage() {
               <Logo size={26} tone="negative" />
             </a>
             {/* Desktop nav */}
-            <nav aria-label="Principal" className="lp-desktop-nav" style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: 20 }}>
+            <nav aria-label="Principal" className="lp-desktop-nav" style={{ flexWrap: "wrap", alignItems: "center", gap: 20 }}>
               <a className="lp-navlink lp-navlink--dark" href="#problema">O problema</a>
               <a className="lp-navlink lp-navlink--dark" href="#como-funciona">Como funciona</a>
               <a className="lp-navlink lp-navlink--dark" href="#relatorios">Relatórios</a>
@@ -76,7 +76,7 @@ export default function LandingPage() {
           <section id="topo" style={{ maxWidth: 1200, margin: "0 auto", padding: "56px 24px 96px", display: "flex", flexWrap: "wrap", gap: 56, alignItems: "center" }}>
             <div style={{ flex: "1 1 500px", minWidth: 0, display: "flex", flexDirection: "column", gap: 28 }}>
               <div className="hero-animate" style={{ animationDelay: "0ms" }}><Logo size={56} tone="negative" /></div>
-              <h1 className="hero-animate" style={{ margin: 0, fontFamily: "var(--font-display)", fontSize: 48, lineHeight: "56px", fontWeight: 800, letterSpacing: "-0.025em", color: "#FFFFFF", maxWidth: 560, animationDelay: "80ms" }}>
+              <h1 className="hero-animate lp-hero-title" style={{ margin: 0, fontFamily: "var(--font-display)", fontSize: 48, lineHeight: "56px", fontWeight: 800, letterSpacing: "-0.025em", color: "#FFFFFF", maxWidth: 560, animationDelay: "80ms" }}>
                 Treinamento dado é treinamento{" "}
                 <span style={{ color: "var(--azul-sinal)", whiteSpace: "nowrap" }}>
                   comprovado
@@ -85,12 +85,12 @@ export default function LandingPage() {
                   </svg>
                 </span>
               </h1>
-              <p className="hero-animate" style={{ margin: 0, fontSize: 18, lineHeight: "28px", color: "var(--sidebar-foreground)", maxWidth: 540, animationDelay: "160ms" }}>
+              <p className="hero-animate lp-hero-subtitle" style={{ margin: 0, fontSize: 18, lineHeight: "28px", color: "var(--sidebar-foreground)", maxWidth: 540, animationDelay: "160ms" }}>
                 O Comproved registra quem ministrou, quem recebeu, a data e o horário de cada treinamento, coleta a assinatura dos dois lados e entrega um comprovante que qualquer pessoa pode conferir.
               </p>
-              <div className="hero-animate" style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: 24, animationDelay: "240ms" }}>
-                <Link href="/cadastro" className="cpv-btn cpv-btn--secondary cpv-btn--lg">Criar conta</Link>
-                <a href="#como-funciona" className="lp-link-dark" style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "10px 2px", fontSize: 15 }}>
+              <div className="hero-animate lp-hero-cta" style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: 24, animationDelay: "240ms" }}>
+                <Link href="/cadastro" className="cpv-btn cpv-btn--secondary cpv-btn--lg lp-hero-cta-btn">Criar conta</Link>
+                <a href="#como-funciona" className="lp-link-dark lp-hero-cta-link" style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "10px 2px", fontSize: 15 }}>
                   Ver como funciona
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                     <path d="M5 12h14" /><path d="m12 5 7 7-7 7" />
@@ -107,10 +107,10 @@ export default function LandingPage() {
             </div>
 
             {/* Hero card */}
-            <div className="hero-animate" style={{ flex: "1 1 460px", minWidth: 0, position: "relative", padding: "36px 0 44px 16px", boxSizing: "border-box", animationDelay: "200ms" }}>
+            <div className="hero-animate lp-hero-card-col" style={{ flex: "1 1 460px", minWidth: 0, position: "relative", padding: "36px 0 44px 16px", boxSizing: "border-box", animationDelay: "200ms" }}>
               <div style={{ background: "var(--card)", color: "var(--card-foreground)", borderRadius: "var(--radius-xl)", boxShadow: "var(--shadow-lg)", padding: 28, display: "flex", flexDirection: "column", gap: 16 }}>
                 <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "space-between", alignItems: "center", gap: 12 }}>
-                  <span style={{ fontSize: 12, lineHeight: "16px", fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--link)" }}>Comprovante de treinamento</span>
+                  <span style={{ fontSize: 12, lineHeight: "16px", fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--link)" }}>Comprovante</span>
                   <StatusBadge status="assinado">Assinado</StatusBadge>
                 </div>
                 <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
@@ -175,6 +175,7 @@ export default function LandingPage() {
                 <div
                   key={item.label}
                   data-reveal=""
+                  className="lp-anatomy-item"
                   style={{ padding: 24, display: "flex", flexDirection: "column", gap: 10, borderRight: i < 4 ? "1px solid var(--border)" : undefined, background: item.accent ? "var(--accent)" : undefined, "--reveal-delay": `${i * 60}ms` } as React.CSSProperties}
                 >
                   <span style={{ color: item.accent ? "var(--primary)" : "var(--marinho)", display: "inline-flex" }}>{item.icon}</span>
@@ -187,10 +188,10 @@ export default function LandingPage() {
         </section>
 
         {/* ── 3 · O Problema ── */}
-        <section id="problema" aria-labelledby="s-problema" style={{ maxWidth: 1200, margin: "0 auto", padding: "96px 24px", display: "flex", flexDirection: "column", gap: 56 }}>
+        <section id="problema" aria-labelledby="s-problema" className="lp-section" style={{ maxWidth: 1200, margin: "0 auto", padding: "96px 24px", display: "flex", flexDirection: "column", gap: 56 }}>
           <div data-reveal="" style={{ display: "flex", flexDirection: "column", gap: 12, maxWidth: 760 }}>
             <span style={{ fontSize: 12, lineHeight: "16px", fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--link)" }}>O problema</span>
-            <h2 id="s-problema" style={{ margin: 0, fontFamily: "var(--font-display)", fontSize: 36, lineHeight: "44px", fontWeight: 700, letterSpacing: "-0.025em", color: "var(--marinho)" }}>
+            <h2 id="s-problema" className="lp-section-h2" style={{ margin: 0, fontFamily: "var(--font-display)", fontSize: 36, lineHeight: "44px", fontWeight: 700, letterSpacing: "-0.025em", color: "var(--marinho)" }}>
               O treinamento aconteceu. Um mês depois, ninguém consegue provar.
             </h2>
             <p style={{ margin: 0, fontSize: 16, lineHeight: "24px", color: "var(--muted-foreground)" }}>Uma história que toda equipe de implantação conhece.</p>
@@ -243,10 +244,10 @@ export default function LandingPage() {
         </section>
 
         {/* ── 4 · Como funciona ── */}
-        <section id="como-funciona" aria-labelledby="s-como" style={{ maxWidth: 1200, margin: "0 auto", padding: "96px 24px", display: "flex", flexDirection: "column", gap: 72 }}>
+        <section id="como-funciona" aria-labelledby="s-como" className="lp-section" style={{ maxWidth: 1200, margin: "0 auto", padding: "96px 24px", display: "flex", flexDirection: "column", gap: 72 }}>
           <div style={{ display: "flex", flexDirection: "column", gap: 12, maxWidth: 760 }}>
             <span style={{ fontSize: 12, lineHeight: "16px", fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--link)" }}>Como funciona</span>
-            <h2 id="s-como" style={{ margin: 0, fontFamily: "var(--font-display)", fontSize: 36, lineHeight: "44px", fontWeight: 700, letterSpacing: "-0.025em", color: "var(--marinho)" }}>
+            <h2 id="s-como" className="lp-section-h2" style={{ margin: 0, fontFamily: "var(--font-display)", fontSize: 36, lineHeight: "44px", fontWeight: 700, letterSpacing: "-0.025em", color: "var(--marinho)" }}>
               Quatro passos entre o fim da aula e o comprovante na mão
             </h2>
           </div>
@@ -258,7 +259,7 @@ export default function LandingPage() {
                 <span style={{ width: 36, height: 36, borderRadius: 18, background: "var(--marinho)", color: "#FFFFFF", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "var(--font-mono)", fontSize: 13, fontWeight: 600 }}>01</span>
                 <span style={{ fontSize: 12, fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--muted-foreground)" }}>Registro</span>
               </span>
-              <h3 style={{ margin: 0, fontFamily: "var(--font-display)", fontSize: 30, lineHeight: "36px", fontWeight: 700, letterSpacing: "-0.025em", color: "var(--marinho)" }}>O instrutor registra o treinamento</h3>
+              <h3 className="lp-step-h3" style={{ margin: 0, fontFamily: "var(--font-display)", fontSize: 30, lineHeight: "36px", fontWeight: 700, letterSpacing: "-0.025em", color: "var(--marinho)" }}>O instrutor registra o treinamento</h3>
               <p style={{ margin: 0, fontSize: 16, lineHeight: "24px", color: "var(--muted-foreground)" }}>Tipo, cliente, data, horário e participantes, numa tela só. Os tipos de treinamento são definidos pelo gestor da conta, então todo mundo registra do mesmo jeito.</p>
             </div>
             <div aria-hidden="true" style={{ flex: "1 1 520px", minWidth: 0, padding: 32, borderRadius: "var(--radius-xl)", background: "var(--secondary)", boxSizing: "border-box" }}>
@@ -288,7 +289,7 @@ export default function LandingPage() {
                     ))}
                   </div>
                 </div>
-                <div style={{ display: "flex", justifyContent: "flex-end", gap: 8 }}>
+                <div className="lp-step1-btns" style={{ display: "flex", justifyContent: "flex-end", gap: 8 }}>
                   <span className="cpv-btn cpv-btn--outline cpv-btn--sm">Salvar rascunho</span>
                   <span className="cpv-btn cpv-btn--primary cpv-btn--sm">Enviar para assinatura</span>
                 </div>
@@ -297,7 +298,7 @@ export default function LandingPage() {
           </div>
 
           {/* Step 2 */}
-          <div style={{ display: "flex", flexWrap: "wrap", gap: 48, alignItems: "center" }}>
+          <div className="lp-step-flip" style={{ display: "flex", flexWrap: "wrap", gap: 48, alignItems: "center" }}>
             <div aria-hidden="true" style={{ flex: "1 1 520px", minWidth: 0, padding: 32, borderRadius: "var(--radius-xl)", background: "var(--marinho)", boxSizing: "border-box" }}>
               <div style={{ background: "var(--card)", borderRadius: "var(--radius-xl)", boxShadow: "var(--shadow-lg)", overflow: "hidden" }}>
                 <div style={{ padding: "16px 24px", borderBottom: "1px solid var(--border)", display: "flex", flexDirection: "column", gap: 4, fontSize: 13, lineHeight: "18px" }}>
@@ -323,7 +324,7 @@ export default function LandingPage() {
                 <span style={{ width: 36, height: 36, borderRadius: 18, background: "var(--marinho)", color: "#FFFFFF", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "var(--font-mono)", fontSize: 13, fontWeight: 600 }}>02</span>
                 <span style={{ fontSize: 12, fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--muted-foreground)" }}>Envio</span>
               </span>
-              <h3 style={{ margin: 0, fontFamily: "var(--font-display)", fontSize: 30, lineHeight: "36px", fontWeight: 700, letterSpacing: "-0.025em", color: "var(--marinho)" }}>Cada participante recebe o seu link</h3>
+              <h3 className="lp-step-h3" style={{ margin: 0, fontFamily: "var(--font-display)", fontSize: 30, lineHeight: "36px", fontWeight: 700, letterSpacing: "-0.025em", color: "var(--marinho)" }}>Cada participante recebe o seu link</h3>
               <p style={{ margin: 0, fontSize: 16, lineHeight: "24px", color: "var(--muted-foreground)" }}>Um e-mail com os dados do treinamento e um botão para assinar. Quem não assinou recebe lembrete, e você acompanha a contagem em tempo real: Pendente · 2 de 3.</p>
             </div>
           </div>
@@ -335,7 +336,7 @@ export default function LandingPage() {
                 <span style={{ width: 36, height: 36, borderRadius: 18, background: "var(--marinho)", color: "#FFFFFF", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "var(--font-mono)", fontSize: 13, fontWeight: 600 }}>03</span>
                 <span style={{ fontSize: 12, fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--muted-foreground)" }}>Assinatura</span>
               </span>
-              <h3 style={{ margin: 0, fontFamily: "var(--font-display)", fontSize: 30, lineHeight: "36px", fontWeight: 700, letterSpacing: "-0.025em", color: "var(--marinho)" }}>Assinam pelo celular, sem criar conta</h3>
+              <h3 className="lp-step-h3" style={{ margin: 0, fontFamily: "var(--font-display)", fontSize: 30, lineHeight: "36px", fontWeight: 700, letterSpacing: "-0.025em", color: "var(--marinho)" }}>Assinam pelo celular, sem criar conta</h3>
               <p style={{ margin: 0, fontSize: 16, lineHeight: "24px", color: "var(--muted-foreground)" }}>O participante confere o que recebeu, confirma e assina com o dedo. O instrutor assina do mesmo jeito. Cada assinatura guarda data e horário.</p>
             </div>
             <div aria-hidden="true" style={{ flex: "1 1 520px", minWidth: 0, padding: "40px 32px", borderRadius: "var(--radius-xl)", background: "var(--secondary)", display: "flex", justifyContent: "center", boxSizing: "border-box" }}>
@@ -367,7 +368,7 @@ export default function LandingPage() {
           </div>
 
           {/* Step 4 */}
-          <div style={{ display: "flex", flexWrap: "wrap", gap: 48, alignItems: "center" }}>
+          <div className="lp-step-flip" style={{ display: "flex", flexWrap: "wrap", gap: 48, alignItems: "center" }}>
             <div aria-hidden="true" style={{ flex: "1 1 520px", minWidth: 0, padding: 32, borderRadius: "var(--radius-xl)", background: "var(--marinho)", boxSizing: "border-box" }}>
               <div style={{ background: "var(--card)", borderRadius: "var(--radius-md)", boxShadow: "var(--shadow-lg)", padding: 32, display: "flex", flexDirection: "column", gap: 18 }}>
                 <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "space-between", alignItems: "center", gap: 12 }}>
@@ -395,7 +396,7 @@ export default function LandingPage() {
                 <span style={{ width: 36, height: 36, borderRadius: 18, background: "var(--primary)", color: "#FFFFFF", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "var(--font-mono)", fontSize: 13, fontWeight: 600 }}>04</span>
                 <span style={{ fontSize: 12, fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--muted-foreground)" }}>Comprovante</span>
               </span>
-              <h3 style={{ margin: 0, fontFamily: "var(--font-display)", fontSize: 30, lineHeight: "36px", fontWeight: 700, letterSpacing: "-0.025em", color: "var(--marinho)" }}>O PDF sai pronto, com selo e código</h3>
+              <h3 className="lp-step-h3" style={{ margin: 0, fontFamily: "var(--font-display)", fontSize: 30, lineHeight: "36px", fontWeight: 700, letterSpacing: "-0.025em", color: "var(--marinho)" }}>O PDF sai pronto, com selo e código</h3>
               <p style={{ margin: 0, fontSize: 16, lineHeight: "24px", color: "var(--muted-foreground)" }}>
                 Quando a última assinatura chega, o comprovante é gerado com todas as assinaturas, o código{" "}
                 <span style={{ fontFamily: "var(--font-mono)", fontSize: 14 }}>CPV</span> e o QR Code para verificação. Baixe, envie ao cliente ou anexe ao contrato.
@@ -406,10 +407,10 @@ export default function LandingPage() {
 
         {/* ── 5 · Papéis ── */}
         <section aria-labelledby="s-papeis" className="lp-grid-bg">
-          <div style={{ maxWidth: 1200, margin: "0 auto", padding: "96px 24px", display: "flex", flexDirection: "column", gap: 48 }}>
+          <div className="lp-section" style={{ maxWidth: 1200, margin: "0 auto", padding: "96px 24px", display: "flex", flexDirection: "column", gap: 48 }}>
             <div style={{ display: "flex", flexDirection: "column", gap: 12, maxWidth: 760 }}>
               <span style={{ fontSize: 12, lineHeight: "16px", fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--azul-sinal)" }}>Um acesso para cada papel</span>
-              <h2 id="s-papeis" style={{ margin: 0, fontFamily: "var(--font-display)", fontSize: 36, lineHeight: "44px", fontWeight: 700, letterSpacing: "-0.025em", color: "#FFFFFF" }}>Cada pessoa vê só o que precisa</h2>
+              <h2 id="s-papeis" className="lp-section-h2" style={{ margin: 0, fontFamily: "var(--font-display)", fontSize: 36, lineHeight: "44px", fontWeight: 700, letterSpacing: "-0.025em", color: "#FFFFFF" }}>Cada pessoa vê só o que precisa</h2>
               <p style={{ margin: 0, fontSize: 16, lineHeight: "24px", color: "var(--sidebar-foreground)" }}>Um login só. O Comproved reconhece quem está entrando e abre a tela certa.</p>
             </div>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: 24 }}>
@@ -441,10 +442,10 @@ export default function LandingPage() {
         </section>
 
         {/* ── 6 · Relatórios ── */}
-        <section id="relatorios" aria-labelledby="s-relatorios" style={{ maxWidth: 1200, margin: "0 auto", padding: "96px 24px", display: "flex", flexWrap: "wrap", gap: 56, alignItems: "center" }}>
+        <section id="relatorios" aria-labelledby="s-relatorios" className="lp-section" style={{ maxWidth: 1200, margin: "0 auto", padding: "96px 24px", display: "flex", flexWrap: "wrap", gap: 56, alignItems: "center" }}>
           <div data-reveal="" style={{ flex: "1 1 360px", minWidth: 0, display: "flex", flexDirection: "column", gap: 16 }}>
             <span style={{ fontSize: 12, lineHeight: "16px", fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--link)" }}>Relatório mensal</span>
-            <h2 id="s-relatorios" style={{ margin: 0, fontFamily: "var(--font-display)", fontSize: 36, lineHeight: "44px", fontWeight: 700, letterSpacing: "-0.025em", color: "var(--marinho)" }}>O fechamento do mês já vem pronto</h2>
+            <h2 id="s-relatorios" className="lp-section-h2" style={{ margin: 0, fontFamily: "var(--font-display)", fontSize: 36, lineHeight: "44px", fontWeight: 700, letterSpacing: "-0.025em", color: "var(--marinho)" }}>O fechamento do mês já vem pronto</h2>
             <p style={{ margin: 0, fontSize: 16, lineHeight: "24px", color: "var(--muted-foreground)" }}>Treinamentos por cliente, por instrutor e por tipo, com o que está assinado e o que está pendente. Exporte em PDF ou CSV para a diretoria ou para o cliente.</p>
             <ul style={{ margin: "8px 0 0", padding: 0, listStyle: "none", display: "flex", flexDirection: "column", gap: 10, fontSize: 15 }}>
               {["Filtro por período, cliente e instrutor", "Pendências com um clique para lembrar", "Exportação em PDF e CSV"].map((item) => (
@@ -523,7 +524,7 @@ export default function LandingPage() {
 
         {/* ── 7 · Verificação pública ── */}
         <section id="verificacao" aria-labelledby="s-verif" style={{ background: "var(--card)", borderTop: "1px solid var(--border)", borderBottom: "1px solid var(--border)" }}>
-          <div style={{ maxWidth: 1200, margin: "0 auto", padding: "96px 24px", display: "flex", flexWrap: "wrap", gap: 56, alignItems: "center" }}>
+          <div className="lp-section" style={{ maxWidth: 1200, margin: "0 auto", padding: "96px 24px", display: "flex", flexWrap: "wrap", gap: 56, alignItems: "center" }}>
             <div style={{ flex: "1 1 560px", minWidth: 0, border: "1px solid var(--border)", borderRadius: "var(--radius-xl)", boxShadow: "var(--shadow-lg)", overflow: "hidden", background: "var(--background)" }}>
               <div aria-hidden="true" style={{ padding: "12px 16px", display: "flex", alignItems: "center", gap: 12, background: "var(--muted)", borderBottom: "1px solid var(--border)" }}>
                 <span style={{ display: "flex", gap: 6 }}>
@@ -538,17 +539,17 @@ export default function LandingPage() {
             </div>
             <div data-reveal="" style={{ flex: "1 1 360px", minWidth: 0, display: "flex", flexDirection: "column", gap: 16 }}>
               <span style={{ fontSize: 12, lineHeight: "16px", fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--link)" }}>Verificação pública</span>
-              <h2 id="s-verif" style={{ margin: 0, fontFamily: "var(--font-display)", fontSize: 36, lineHeight: "44px", fontWeight: 700, letterSpacing: "-0.025em", color: "var(--marinho)" }}>Qualquer pessoa confere. Sem login, sem ligação.</h2>
+              <h2 id="s-verif" className="lp-section-h2" style={{ margin: 0, fontFamily: "var(--font-display)", fontSize: 36, lineHeight: "44px", fontWeight: 700, letterSpacing: "-0.025em", color: "var(--marinho)" }}>Qualquer pessoa confere. Sem login, sem ligação.</h2>
               <p style={{ margin: 0, fontSize: 16, lineHeight: "24px", color: "var(--muted-foreground)" }}>O cliente, o auditor ou o jurídico digitam o código ou leem o QR Code e veem quem assinou e quando. Experimente ao lado.</p>
             </div>
           </div>
         </section>
 
         {/* ── 8 · Trilha de registro ── */}
-        <section aria-labelledby="s-trilha" style={{ maxWidth: 1200, margin: "0 auto", padding: "96px 24px", display: "flex", flexWrap: "wrap", gap: 56, alignItems: "flex-start" }}>
+        <section aria-labelledby="s-trilha" className="lp-section" style={{ maxWidth: 1200, margin: "0 auto", padding: "96px 24px", display: "flex", flexWrap: "wrap", gap: 56, alignItems: "flex-start" }}>
           <div style={{ flex: "1 1 360px", minWidth: 0, display: "flex", flexDirection: "column", gap: 16 }}>
             <span style={{ fontSize: 12, lineHeight: "16px", fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--link)" }}>Transparência</span>
-            <h2 id="s-trilha" style={{ margin: 0, fontFamily: "var(--font-display)", fontSize: 36, lineHeight: "44px", fontWeight: 700, letterSpacing: "-0.025em", color: "var(--marinho)" }}>Cada passo fica registrado, com data e hora</h2>
+            <h2 id="s-trilha" className="lp-section-h2" style={{ margin: 0, fontFamily: "var(--font-display)", fontSize: 36, lineHeight: "44px", fontWeight: 700, letterSpacing: "-0.025em", color: "var(--marinho)" }}>Cada passo fica registrado, com data e hora</h2>
             <p style={{ margin: 0, fontSize: 16, lineHeight: "24px", color: "var(--muted-foreground)" }}>Do registro à última assinatura, o histórico de cada comprovante mostra quem fez o quê e quando. Nada é apagado.</p>
           </div>
           <div data-reveal="" style={{ flex: "1 1 560px", minWidth: 0, background: "var(--graphite-900)", borderRadius: "var(--radius-xl)", boxShadow: "var(--shadow-lg)", padding: 24, boxSizing: "border-box", display: "flex", flexDirection: "column", gap: 4 }}>
@@ -577,10 +578,10 @@ export default function LandingPage() {
 
         {/* ── 9 · Segurança ── */}
         <section id="seguranca" aria-labelledby="s-seguranca" className="lp-grid-bg">
-          <div style={{ maxWidth: 1200, margin: "0 auto", padding: "96px 24px", display: "flex", flexDirection: "column", gap: 48 }}>
+          <div className="lp-section" style={{ maxWidth: 1200, margin: "0 auto", padding: "96px 24px", display: "flex", flexDirection: "column", gap: 48 }}>
             <div style={{ display: "flex", flexDirection: "column", gap: 12, maxWidth: 760 }}>
               <span style={{ fontSize: 12, lineHeight: "16px", fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--azul-sinal)" }}>Segurança e controle</span>
-              <h2 id="s-seguranca" style={{ margin: 0, fontFamily: "var(--font-display)", fontSize: 36, lineHeight: "44px", fontWeight: 700, letterSpacing: "-0.025em", color: "#FFFFFF" }}>Os dados da sua empresa, sob o seu controle</h2>
+              <h2 id="s-seguranca" className="lp-section-h2" style={{ margin: 0, fontFamily: "var(--font-display)", fontSize: 36, lineHeight: "44px", fontWeight: 700, letterSpacing: "-0.025em", color: "#FFFFFF" }}>Os dados da sua empresa, sob o seu controle</h2>
               <p style={{ margin: 0, fontSize: 16, lineHeight: "24px", color: "var(--sidebar-foreground)" }}>Cada empresa tem a própria conta, com os seus instrutores, clientes e comprovantes. Quem é de fora não vê o que é seu.</p>
             </div>
             <div style={{ display: "flex", flexWrap: "wrap", gap: 32, alignItems: "stretch" }}>
@@ -646,10 +647,10 @@ export default function LandingPage() {
 
         {/* ── 11 · Perguntas ── */}
         <section id="perguntas" aria-labelledby="s-faq" style={{ background: "var(--card)", borderTop: "1px solid var(--border)", borderBottom: "1px solid var(--border)" }}>
-          <div style={{ maxWidth: 1200, margin: "0 auto", padding: "96px 24px", display: "flex", flexWrap: "wrap", gap: 56, alignItems: "flex-start" }}>
+          <div className="lp-section" style={{ maxWidth: 1200, margin: "0 auto", padding: "96px 24px", display: "flex", flexWrap: "wrap", gap: 56, alignItems: "flex-start" }}>
             <div data-reveal="" style={{ flex: "1 1 320px", minWidth: 0, display: "flex", flexDirection: "column", gap: 16 }}>
               <span style={{ fontSize: 12, lineHeight: "16px", fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--link)" }}>Perguntas frequentes</span>
-              <h2 id="s-faq" style={{ margin: 0, fontFamily: "var(--font-display)", fontSize: 36, lineHeight: "44px", fontWeight: 700, letterSpacing: "-0.025em", color: "var(--marinho)" }}>Antes de criar sua conta</h2>
+              <h2 id="s-faq" className="lp-section-h2" style={{ margin: 0, fontFamily: "var(--font-display)", fontSize: 36, lineHeight: "44px", fontWeight: 700, letterSpacing: "-0.025em", color: "var(--marinho)" }}>Antes de criar sua conta</h2>
               <p style={{ margin: 0, fontSize: 16, lineHeight: "24px", color: "var(--muted-foreground)" }}>
                 Não achou sua dúvida? Fale com a gente em{" "}
                 <span style={{ fontFamily: "var(--font-mono)", fontSize: 14 }}>contato@comproved.com.br</span>.
@@ -677,10 +678,10 @@ export default function LandingPage() {
 
         {/* ── 12 · CTA ── */}
         <section id="criar-conta" aria-labelledby="s-conta" className="lp-grid-bg">
-          <div style={{ maxWidth: 1200, margin: "0 auto", padding: "96px 24px", display: "flex", flexWrap: "wrap", gap: 56, alignItems: "center" }}>
+          <div className="lp-section" style={{ maxWidth: 1200, margin: "0 auto", padding: "96px 24px", display: "flex", flexWrap: "wrap", gap: 56, alignItems: "center" }}>
             <div data-reveal="" style={{ flex: "1 1 480px", minWidth: 0, display: "flex", flexDirection: "column", gap: 24 }}>
               <span style={{ fontSize: 12, lineHeight: "16px", fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--azul-sinal)" }}>Comece agora</span>
-              <h2 id="s-conta" style={{ margin: 0, fontFamily: "var(--font-display)", fontSize: 36, lineHeight: "44px", fontWeight: 700, letterSpacing: "-0.025em", color: "#FFFFFF" }}>
+              <h2 id="s-conta" className="lp-section-h2" style={{ margin: 0, fontFamily: "var(--font-display)", fontSize: 36, lineHeight: "44px", fontWeight: 700, letterSpacing: "-0.025em", color: "#FFFFFF" }}>
                 Crie a conta da sua empresa e comprove o próximo treinamento
               </h2>
               <p style={{ margin: 0, fontSize: 16, lineHeight: "24px", color: "var(--sidebar-foreground)", maxWidth: 520 }}>
@@ -733,7 +734,7 @@ export default function LandingPage() {
 
         {/* ── 13 · Fechamento ── */}
         <section aria-label="Slogan" style={{ background: "var(--card)" }}>
-          <div data-reveal="" style={{ maxWidth: 1200, margin: "0 auto", padding: "96px 24px", display: "flex", flexDirection: "column", alignItems: "center", gap: 28, textAlign: "center" }}>
+          <div data-reveal="" className="lp-section" style={{ maxWidth: 1200, margin: "0 auto", padding: "96px 24px", display: "flex", flexDirection: "column", alignItems: "center", gap: 28, textAlign: "center" }}>
             <Logo size={48} />
             <p style={{ margin: 0, fontFamily: "var(--font-display)", fontSize: 36, lineHeight: "44px", fontWeight: 800, letterSpacing: "-0.025em", color: "var(--marinho)", maxWidth: 720 }}>
               Treinamento dado é treinamento <span style={{ color: "var(--primary)" }}>comprovado</span>.
