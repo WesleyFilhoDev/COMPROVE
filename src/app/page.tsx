@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Logo } from "@/components/logo";
 import { MobileNav } from "@/components/landing/mobile-nav";
 import { VerifyDemo } from "@/components/landing/verify-demo";
+import { ScrollRevealInit } from "@/components/landing/scroll-reveal-init";
 
 function CheckIcon({ size = 18 }: { size?: number }) {
   return (
@@ -46,6 +47,7 @@ function VerificationSeal({ code, issuedAt, signatures }: { code: string; issued
 export default function LandingPage() {
   return (
     <div style={{ width: "100%", minHeight: "100vh", background: "var(--marinho)", color: "var(--foreground)", fontFamily: "var(--font-sans)", fontSize: 14, lineHeight: "20px", overflowX: "hidden" }}>
+      <ScrollRevealInit />
       <div style={{ background: "var(--background)" }}>
 
         {/* ── 1 · Header + Hero ── */}
@@ -172,7 +174,8 @@ export default function LandingPage() {
               ].map((item, i) => (
                 <div
                   key={item.label}
-                  style={{ padding: 24, display: "flex", flexDirection: "column", gap: 10, borderRight: i < 4 ? "1px solid var(--border)" : undefined, background: item.accent ? "var(--accent)" : undefined }}
+                  data-reveal=""
+                  style={{ padding: 24, display: "flex", flexDirection: "column", gap: 10, borderRight: i < 4 ? "1px solid var(--border)" : undefined, background: item.accent ? "var(--accent)" : undefined, "--reveal-delay": `${i * 60}ms` } as React.CSSProperties}
                 >
                   <span style={{ color: item.accent ? "var(--primary)" : "var(--marinho)", display: "inline-flex" }}>{item.icon}</span>
                   <span style={{ fontSize: 14, fontWeight: 600 }}>{item.label}</span>
@@ -185,7 +188,7 @@ export default function LandingPage() {
 
         {/* ── 3 · O Problema ── */}
         <section id="problema" aria-labelledby="s-problema" style={{ maxWidth: 1200, margin: "0 auto", padding: "96px 24px", display: "flex", flexDirection: "column", gap: 56 }}>
-          <div style={{ display: "flex", flexDirection: "column", gap: 12, maxWidth: 760 }}>
+          <div data-reveal="" style={{ display: "flex", flexDirection: "column", gap: 12, maxWidth: 760 }}>
             <span style={{ fontSize: 12, lineHeight: "16px", fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--link)" }}>O problema</span>
             <h2 id="s-problema" style={{ margin: 0, fontFamily: "var(--font-display)", fontSize: 36, lineHeight: "44px", fontWeight: 700, letterSpacing: "-0.025em", color: "var(--marinho)" }}>
               O treinamento aconteceu. Um mês depois, ninguém consegue provar.
@@ -202,7 +205,7 @@ export default function LandingPage() {
                 { ts: "03/12 · 15:40", title: "A busca começa", desc: "Todo mundo procura e-mail, foto, planilha. Nada tem data, nome e assinatura no mesmo lugar.", color: "var(--warning)", warning: true, quote: undefined },
                 { ts: "04/12 · 10:30", title: "O treinamento é refeito", desc: "Sem prova do que foi feito, o cliente ganha razão.", color: "var(--destructive)", warning: true, quote: undefined },
               ].map((item, i) => (
-                <li key={i} style={{ display: "flex", gap: 20 }}>
+                <li key={i} data-reveal="" style={{ display: "flex", gap: 20, "--reveal-delay": `${i * 80}ms` } as React.CSSProperties}>
                   <div style={{ display: "flex", flexDirection: "column", alignItems: "center", flex: "none", width: 16 }}>
                     <span style={{ width: 12, height: 12, marginTop: 4, borderRadius: 6, background: item.color }}></span>
                     {i < 4 && <span style={{ flex: 1, width: 2, background: "var(--border)" }}></span>}
@@ -219,7 +222,7 @@ export default function LandingPage() {
               ))}
             </ol>
 
-            <div style={{ flex: "1 1 320px", minWidth: 0, padding: "32px 28px", borderRadius: "var(--radius-xl)", background: "var(--marinho)", color: "#FFFFFF", display: "flex", flexDirection: "column", gap: 24, alignSelf: "flex-start" }}>
+            <div data-reveal="" style={{ flex: "1 1 320px", minWidth: 0, padding: "32px 28px", borderRadius: "var(--radius-xl)", background: "var(--marinho)", color: "#FFFFFF", display: "flex", flexDirection: "column", gap: 24, alignSelf: "flex-start" }}>
               <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                 <span style={{ fontSize: 12, fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--azul-sinal)" }}>Com o Comproved</span>
                 <h3 style={{ margin: 0, fontFamily: "var(--font-display)", fontSize: 20, lineHeight: "28px", fontWeight: 700 }}>O comprovante existe desde o fim da aula</h3>
@@ -250,7 +253,7 @@ export default function LandingPage() {
 
           {/* Step 1 */}
           <div style={{ display: "flex", flexWrap: "wrap", gap: 48, alignItems: "center" }}>
-            <div style={{ flex: "1 1 380px", minWidth: 0, display: "flex", flexDirection: "column", gap: 16 }}>
+            <div data-reveal="" style={{ flex: "1 1 380px", minWidth: 0, display: "flex", flexDirection: "column", gap: 16 }}>
               <span style={{ display: "inline-flex", alignItems: "center", gap: 12 }}>
                 <span style={{ width: 36, height: 36, borderRadius: 18, background: "var(--marinho)", color: "#FFFFFF", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "var(--font-mono)", fontSize: 13, fontWeight: 600 }}>01</span>
                 <span style={{ fontSize: 12, fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--muted-foreground)" }}>Registro</span>
@@ -315,7 +318,7 @@ export default function LandingPage() {
                 </div>
               </div>
             </div>
-            <div style={{ flex: "1 1 380px", minWidth: 0, display: "flex", flexDirection: "column", gap: 16 }}>
+            <div data-reveal="" style={{ flex: "1 1 380px", minWidth: 0, display: "flex", flexDirection: "column", gap: 16 }}>
               <span style={{ display: "inline-flex", alignItems: "center", gap: 12 }}>
                 <span style={{ width: 36, height: 36, borderRadius: 18, background: "var(--marinho)", color: "#FFFFFF", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "var(--font-mono)", fontSize: 13, fontWeight: 600 }}>02</span>
                 <span style={{ fontSize: 12, fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--muted-foreground)" }}>Envio</span>
@@ -327,7 +330,7 @@ export default function LandingPage() {
 
           {/* Step 3 */}
           <div style={{ display: "flex", flexWrap: "wrap", gap: 48, alignItems: "center" }}>
-            <div style={{ flex: "1 1 380px", minWidth: 0, display: "flex", flexDirection: "column", gap: 16 }}>
+            <div data-reveal="" style={{ flex: "1 1 380px", minWidth: 0, display: "flex", flexDirection: "column", gap: 16 }}>
               <span style={{ display: "inline-flex", alignItems: "center", gap: 12 }}>
                 <span style={{ width: 36, height: 36, borderRadius: 18, background: "var(--marinho)", color: "#FFFFFF", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "var(--font-mono)", fontSize: 13, fontWeight: 600 }}>03</span>
                 <span style={{ fontSize: 12, fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--muted-foreground)" }}>Assinatura</span>
@@ -387,7 +390,7 @@ export default function LandingPage() {
                 <VerificationSeal code="CPV-2026-000184" issuedAt="05/11/2026 às 10:14" signatures="3 de 3 assinaturas coletadas" />
               </div>
             </div>
-            <div style={{ flex: "1 1 380px", minWidth: 0, display: "flex", flexDirection: "column", gap: 16 }}>
+            <div data-reveal="" style={{ flex: "1 1 380px", minWidth: 0, display: "flex", flexDirection: "column", gap: 16 }}>
               <span style={{ display: "inline-flex", alignItems: "center", gap: 12 }}>
                 <span style={{ width: 36, height: 36, borderRadius: 18, background: "var(--primary)", color: "#FFFFFF", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "var(--font-mono)", fontSize: 13, fontWeight: 600 }}>04</span>
                 <span style={{ fontSize: 12, fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--muted-foreground)" }}>Comprovante</span>
@@ -414,8 +417,8 @@ export default function LandingPage() {
                 { initials: "GC", bg: undefined, color: undefined, title: "Gestor da conta", subtitle: "Quem coordena a equipe", items: ["Convida instrutores por e-mail", "Define os tipos de treinamento", "Vê todos os comprovantes e relatórios"] },
                 { initials: "CL", bg: "var(--azul-sinal)", color: "var(--marinho)", title: "Instrutor", subtitle: "Quem ministra o treinamento", items: ["Registra o treinamento ao terminar", "Envia para assinatura e assina junto", "Acompanha quem ainda falta assinar"] },
                 { initials: "AS", bg: undefined, color: undefined, title: "Participante", subtitle: "Quem recebe o treinamento", items: ["Recebe o link por e-mail", "Assina sem criar conta", "Recebe uma cópia do comprovante"] },
-              ].map((role) => (
-                <div key={role.title} style={{ padding: 28, borderRadius: "var(--radius-xl)", background: "var(--sidebar-accent)", border: "1px solid var(--sidebar-border)", display: "flex", flexDirection: "column", gap: 20 }}>
+              ].map((role, i) => (
+                <div key={role.title} data-reveal="" style={{ padding: 28, borderRadius: "var(--radius-xl)", background: "var(--sidebar-accent)", border: "1px solid var(--sidebar-border)", display: "flex", flexDirection: "column", gap: 20, "--reveal-delay": `${i * 100}ms` } as React.CSSProperties}>
                   <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
                     <span className="cpv-avatar" style={{ width: 44, height: 44, fontSize: 14, background: role.bg, color: role.color }}>{role.initials}</span>
                     <div style={{ display: "flex", flexDirection: "column" }}>
@@ -439,7 +442,7 @@ export default function LandingPage() {
 
         {/* ── 6 · Relatórios ── */}
         <section id="relatorios" aria-labelledby="s-relatorios" style={{ maxWidth: 1200, margin: "0 auto", padding: "96px 24px", display: "flex", flexWrap: "wrap", gap: 56, alignItems: "center" }}>
-          <div style={{ flex: "1 1 360px", minWidth: 0, display: "flex", flexDirection: "column", gap: 16 }}>
+          <div data-reveal="" style={{ flex: "1 1 360px", minWidth: 0, display: "flex", flexDirection: "column", gap: 16 }}>
             <span style={{ fontSize: 12, lineHeight: "16px", fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--link)" }}>Relatório mensal</span>
             <h2 id="s-relatorios" style={{ margin: 0, fontFamily: "var(--font-display)", fontSize: 36, lineHeight: "44px", fontWeight: 700, letterSpacing: "-0.025em", color: "var(--marinho)" }}>O fechamento do mês já vem pronto</h2>
             <p style={{ margin: 0, fontSize: 16, lineHeight: "24px", color: "var(--muted-foreground)" }}>Treinamentos por cliente, por instrutor e por tipo, com o que está assinado e o que está pendente. Exporte em PDF ou CSV para a diretoria ou para o cliente.</p>
@@ -453,7 +456,7 @@ export default function LandingPage() {
             </ul>
           </div>
 
-          <div style={{ flex: "1 1 600px", minWidth: 0, background: "var(--card)", border: "1px solid var(--border)", borderRadius: "var(--radius-xl)", boxShadow: "var(--shadow-lg)", display: "flex", flexDirection: "column" }}>
+          <div data-reveal="" style={{ flex: "1 1 600px", minWidth: 0, background: "var(--card)", border: "1px solid var(--border)", borderRadius: "var(--radius-xl)", boxShadow: "var(--shadow-lg)", display: "flex", flexDirection: "column" }}>
             <div style={{ padding: "20px 24px", borderBottom: "1px solid var(--border)", display: "flex", flexWrap: "wrap", justifyContent: "space-between", alignItems: "center", gap: 12 }}>
               <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
                 <span style={{ fontSize: 16, lineHeight: "24px", fontWeight: 600 }}>Treinamentos por mês</span>
@@ -533,7 +536,7 @@ export default function LandingPage() {
               </div>
               <VerifyDemo />
             </div>
-            <div style={{ flex: "1 1 360px", minWidth: 0, display: "flex", flexDirection: "column", gap: 16 }}>
+            <div data-reveal="" style={{ flex: "1 1 360px", minWidth: 0, display: "flex", flexDirection: "column", gap: 16 }}>
               <span style={{ fontSize: 12, lineHeight: "16px", fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--link)" }}>Verificação pública</span>
               <h2 id="s-verif" style={{ margin: 0, fontFamily: "var(--font-display)", fontSize: 36, lineHeight: "44px", fontWeight: 700, letterSpacing: "-0.025em", color: "var(--marinho)" }}>Qualquer pessoa confere. Sem login, sem ligação.</h2>
               <p style={{ margin: 0, fontSize: 16, lineHeight: "24px", color: "var(--muted-foreground)" }}>O cliente, o auditor ou o jurídico digitam o código ou leem o QR Code e veem quem assinou e quando. Experimente ao lado.</p>
@@ -548,7 +551,7 @@ export default function LandingPage() {
             <h2 id="s-trilha" style={{ margin: 0, fontFamily: "var(--font-display)", fontSize: 36, lineHeight: "44px", fontWeight: 700, letterSpacing: "-0.025em", color: "var(--marinho)" }}>Cada passo fica registrado, com data e hora</h2>
             <p style={{ margin: 0, fontSize: 16, lineHeight: "24px", color: "var(--muted-foreground)" }}>Do registro à última assinatura, o histórico de cada comprovante mostra quem fez o quê e quando. Nada é apagado.</p>
           </div>
-          <div style={{ flex: "1 1 560px", minWidth: 0, background: "var(--graphite-900)", borderRadius: "var(--radius-xl)", boxShadow: "var(--shadow-lg)", padding: 24, boxSizing: "border-box", display: "flex", flexDirection: "column", gap: 4 }}>
+          <div data-reveal="" style={{ flex: "1 1 560px", minWidth: 0, background: "var(--graphite-900)", borderRadius: "var(--radius-xl)", boxShadow: "var(--shadow-lg)", padding: 24, boxSizing: "border-box", display: "flex", flexDirection: "column", gap: 4 }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", paddingBottom: 12, marginBottom: 8, borderBottom: "1px solid var(--graphite-700)" }}>
               <span style={{ fontFamily: "var(--font-mono)", fontSize: 13, fontWeight: 600, color: "#FFFFFF" }}>CPV-2026-000184 · histórico</span>
               <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: "var(--graphite-300)" }}>7 eventos</span>
@@ -587,8 +590,8 @@ export default function LandingPage() {
                   { title: "Acesso por papel", desc: "O instrutor vê os próprios treinamentos. O gestor vê a equipe inteira.", icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M22 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></svg> },
                   { title: "Senhas protegidas", desc: "As senhas são guardadas com criptografia e não ficam visíveis para ninguém.", icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="11" x="3" y="11" rx="2" ry="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" /></svg> },
                   { title: "Convite e recuperação por e-mail", desc: "O instrutor define a própria senha no convite. Esqueceu? Um link por e-mail resolve.", icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round"><rect width="20" height="16" x="2" y="4" rx="2" /><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" /></svg> },
-                ].map((card) => (
-                  <div key={card.title} style={{ padding: 24, borderRadius: "var(--radius-xl)", background: "var(--sidebar-accent)", border: "1px solid var(--sidebar-border)", display: "flex", flexDirection: "column", gap: 12 }}>
+                ].map((card, i) => (
+                  <div key={card.title} data-reveal="" style={{ padding: 24, borderRadius: "var(--radius-xl)", background: "var(--sidebar-accent)", border: "1px solid var(--sidebar-border)", display: "flex", flexDirection: "column", gap: 12, "--reveal-delay": `${i * 80}ms` } as React.CSSProperties}>
                     <span style={{ width: 40, height: 40, borderRadius: "var(--radius-md)", background: "var(--marinho)", color: "var(--azul-sinal)", display: "flex", alignItems: "center", justifyContent: "center" }}>{card.icon}</span>
                     <h3 style={{ margin: 0, fontSize: 16, lineHeight: "24px", fontWeight: 600, color: "#FFFFFF" }}>{card.title}</h3>
                     <p style={{ margin: 0, color: "var(--sidebar-foreground)" }}>{card.desc}</p>
@@ -631,8 +634,8 @@ export default function LandingPage() {
                 { title: "Consultorias", desc: "Capacitações entregues em campo e comprovadas no mesmo dia." },
                 { title: "RH e treinamento interno", desc: "Integrações e reciclagens com histórico por colaborador." },
                 { title: "Fornecedores de equipamentos", desc: "Treinamento de operação registrado na entrega de cada equipamento." },
-              ].map((item) => (
-                <div key={item.title} style={{ display: "flex", flexDirection: "column", gap: 8, paddingTop: 20, borderTop: "2px solid var(--marinho)" }}>
+              ].map((item, i) => (
+                <div key={item.title} data-reveal="" style={{ display: "flex", flexDirection: "column", gap: 8, paddingTop: 20, borderTop: "2px solid var(--marinho)", "--reveal-delay": `${i * 80}ms` } as React.CSSProperties}>
                   <h3 style={{ margin: 0, fontFamily: "var(--font-display)", fontSize: 20, lineHeight: "28px", fontWeight: 700, color: "var(--marinho)" }}>{item.title}</h3>
                   <p style={{ margin: 0, color: "var(--muted-foreground)" }}>{item.desc}</p>
                 </div>
@@ -644,7 +647,7 @@ export default function LandingPage() {
         {/* ── 11 · Perguntas ── */}
         <section id="perguntas" aria-labelledby="s-faq" style={{ background: "var(--card)", borderTop: "1px solid var(--border)", borderBottom: "1px solid var(--border)" }}>
           <div style={{ maxWidth: 1200, margin: "0 auto", padding: "96px 24px", display: "flex", flexWrap: "wrap", gap: 56, alignItems: "flex-start" }}>
-            <div style={{ flex: "1 1 320px", minWidth: 0, display: "flex", flexDirection: "column", gap: 16 }}>
+            <div data-reveal="" style={{ flex: "1 1 320px", minWidth: 0, display: "flex", flexDirection: "column", gap: 16 }}>
               <span style={{ fontSize: 12, lineHeight: "16px", fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--link)" }}>Perguntas frequentes</span>
               <h2 id="s-faq" style={{ margin: 0, fontFamily: "var(--font-display)", fontSize: 36, lineHeight: "44px", fontWeight: 700, letterSpacing: "-0.025em", color: "var(--marinho)" }}>Antes de criar sua conta</h2>
               <p style={{ margin: 0, fontSize: 16, lineHeight: "24px", color: "var(--muted-foreground)" }}>
@@ -675,7 +678,7 @@ export default function LandingPage() {
         {/* ── 12 · CTA ── */}
         <section id="criar-conta" aria-labelledby="s-conta" className="lp-grid-bg">
           <div style={{ maxWidth: 1200, margin: "0 auto", padding: "96px 24px", display: "flex", flexWrap: "wrap", gap: 56, alignItems: "center" }}>
-            <div style={{ flex: "1 1 480px", minWidth: 0, display: "flex", flexDirection: "column", gap: 24 }}>
+            <div data-reveal="" style={{ flex: "1 1 480px", minWidth: 0, display: "flex", flexDirection: "column", gap: 24 }}>
               <span style={{ fontSize: 12, lineHeight: "16px", fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--azul-sinal)" }}>Comece agora</span>
               <h2 id="s-conta" style={{ margin: 0, fontFamily: "var(--font-display)", fontSize: 36, lineHeight: "44px", fontWeight: 700, letterSpacing: "-0.025em", color: "#FFFFFF" }}>
                 Crie a conta da sua empresa e comprove o próximo treinamento
@@ -692,7 +695,7 @@ export default function LandingPage() {
               </div>
             </div>
 
-            <div style={{ flex: "1 1 420px", minWidth: 0, maxWidth: 520, background: "var(--card)", borderRadius: "var(--radius-xl)", boxShadow: "var(--shadow-lg)", padding: 32, boxSizing: "border-box", display: "flex", flexDirection: "column", gap: 20 }}>
+            <div data-reveal="" style={{ flex: "1 1 420px", minWidth: 0, maxWidth: 520, background: "var(--card)", borderRadius: "var(--radius-xl)", boxShadow: "var(--shadow-lg)", padding: 32, boxSizing: "border-box", display: "flex", flexDirection: "column", gap: 20 }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12 }}>
                 <h3 style={{ margin: 0, fontFamily: "var(--font-display)", fontSize: 20, lineHeight: "28px", fontWeight: 700, color: "var(--marinho)" }}>Seus primeiros passos</h3>
                 <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 500, color: "var(--muted-foreground)" }}>1 de 4</span>
@@ -730,7 +733,7 @@ export default function LandingPage() {
 
         {/* ── 13 · Fechamento ── */}
         <section aria-label="Slogan" style={{ background: "var(--card)" }}>
-          <div style={{ maxWidth: 1200, margin: "0 auto", padding: "96px 24px", display: "flex", flexDirection: "column", alignItems: "center", gap: 28, textAlign: "center" }}>
+          <div data-reveal="" style={{ maxWidth: 1200, margin: "0 auto", padding: "96px 24px", display: "flex", flexDirection: "column", alignItems: "center", gap: 28, textAlign: "center" }}>
             <Logo size={48} />
             <p style={{ margin: 0, fontFamily: "var(--font-display)", fontSize: 36, lineHeight: "44px", fontWeight: 800, letterSpacing: "-0.025em", color: "var(--marinho)", maxWidth: 720 }}>
               Treinamento dado é treinamento <span style={{ color: "var(--primary)" }}>comprovado</span>.

@@ -179,7 +179,22 @@
   }
   html {
     font-family: var(--font-sans);
+    scroll-behavior: smooth;
   }
+}
+
+/* ── Scroll reveal animations ── */
+.js-reveal [data-reveal] {
+  opacity: 0;
+  transform: translateY(18px);
+  transition: opacity 0.55s ease var(--reveal-delay, 0ms), transform 0.55s ease var(--reveal-delay, 0ms);
+}
+.js-reveal [data-reveal].is-visible {
+  opacity: 1;
+  transform: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .js-reveal [data-reveal] { transition: none; }
 }
 
 /* ── Landing page grid background ── */
