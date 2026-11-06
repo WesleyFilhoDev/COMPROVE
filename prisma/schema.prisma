@@ -1,0 +1,232 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum UserRole {
+  MASTER
+  ADMIN
+  COLLABORATOR
+}
+
+enum TrainingStatus {
+  ISSUED
+  CANCELED
+}
+
+enum SignerRole {
+  INSTRUCTOR
+  TRAINEE
+}
+
+enum SignatureMethod {
+  PHYSICAL
+  DIGITAL
+}
+
+enum SignatureStatus {
+  PENDING
+  SIGNED
+}
+
+model Company {
+  id            String    @id @default(uuid(7))
+  name          String
+  cnpj          String    @unique // só dígitos
+  zipCode       String
+  street        String
+  number        String
+  complement    String?
+  district      String
+  city          String
+  state         String    @db.Char(2)
+  deactivatedAt DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  users         User[]
+  invitations   Invitation[]
+  trainingTypes TrainingType[]
+  trainings     Training[]
+  signatures    Signature[]
+}
+
+model User {
+  id            String    @id @default(uuid(7))
+  name          String
+  email         String    @unique
+  emailVerified Boolean   @default(false)
+  image         String?
+  phone         String? // E.164
+  jobTitle      String?
+  role          UserRole? // null = ainda sem empresa
+  companyId     String? // null = Master ou ainda sem empresa
+  deactivatedAt DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  company             Company?     @relation(fields: [companyId], references: [id], onDelete: Restrict)
+  sessions            Session[]
+  accounts            Account[]
+  invitationsSent     Invitation[] @relation("InvitedBy")
+  invitationsAccepted Invitation[] @relation("AcceptedBy")
+  trainingsGiven      Training[]   @relation("Instructor")
+  trainingsCanceled   Training[]   @relation("CanceledBy")
+
+  @@index([companyId, role])
+}
+
+model Session {
+  id        String   @id @default(uuid(7))
+  token     String   @unique
+  userId    String
+  expiresAt DateTime
+  ipAddress String?
+  userAgent String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model Account {
+  id                    String    @id @default(uuid(7))
+  userId                String
+  accountId             String
+  providerId            String // "credential" ou "google"
+  password              String? // hash, só em "credential"
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([providerId, accountId])
+  @@index([userId])
+}
+
+model Verification {
+  id         String   @id @default(uuid(7))
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([identifier])
+}
+
+model Invitation {
+  id           String    @id @default(uuid(7))
+  companyId    String
+  invitedById  String
+  name         String
+  phone        String // E.164
+  jobTitle     String
+  tokenHash    String    @unique // SHA-256; o token puro nunca é salvo
+  expiresAt    DateTime
+  acceptedAt   DateTime?
+  acceptedById String?
+  revokedAt    DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  company    Company @relation(fields: [companyId], references: [id], onDelete: Restrict)
+  invitedBy  User    @relation("InvitedBy", fields: [invitedById], references: [id], onDelete: Restrict)
+  acceptedBy User?   @relation("AcceptedBy", fields: [acceptedById], references: [id], onDelete: Restrict)
+
+  @@index([companyId, createdAt])
+}
+
+model TrainingType {
+  id          String    @id @default(uuid(7))
+  companyId   String
+  name        String
+  description String?
+  archivedAt  DateTime? // arquiva em vez de apagar: o histórico depende dele
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  company   Company    @relation(fields: [companyId], references: [id], onDelete: Restrict)
+  trainings Training[]
+
+  @@unique([companyId, name])
+  @@unique([id, companyId]) // alvo da FK composta em Training
+}
+
+model Training {
+  id             String         @id @default(uuid(7))
+  companyId      String
+  instructorId   String
+  trainingTypeId String
+  status         TrainingStatus @default(ISSUED)
+
+  startsAt DateTime
+  endsAt   DateTime
+
+  // Quem recebeu
+  traineeName       String
+  traineeCpf        String // só dígitos; mascarado nas listagens
+  clientCompanyName String
+
+  // Cópia dos dados na emissão: alterar cadastros não muda documentos antigos
+  instructorNameSnapshot     String
+  instructorJobTitleSnapshot String
+  trainingTypeNameSnapshot   String
+  companyNameSnapshot        String
+  companyCnpjSnapshot        String
+
+  // Integridade do documento
+  verificationCode String @unique // impresso no PDF
+  contentHash      String // SHA-256 dos dados acima em forma canônica
+  templateVersion  Int    @default(1)
+
+  canceledAt   DateTime?
+  canceledById String?
+  cancelReason String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  company      Company      @relation(fields: [companyId], references: [id], onDelete: Restrict)
+  instructor   User         @relation("Instructor", fields: [instructorId], references: [id], onDelete: Restrict)
+  canceledBy   User?        @relation("CanceledBy", fields: [canceledById], references: [id], onDelete: Restrict)
+  trainingType TrainingType @relation(fields: [trainingTypeId, companyId], references: [id, companyId], onDelete: Restrict)
+  signatures   Signature[]
+
+  @@unique([id, companyId]) // alvo da FK composta em Signature
+  @@index([companyId, startsAt])
+  @@index([companyId, instructorId, startsAt])
+  @@index([companyId, trainingTypeId, startsAt])
+}
+
+// Estrutura pronta para a assinatura; a tecnologia será definida depois
+model Signature {
+  id         String           @id @default(uuid(7))
+  companyId  String
+  trainingId String
+  signerRole SignerRole
+  signerName String
+  status     SignatureStatus  @default(PENDING)
+  method     SignatureMethod?
+  signedAt   DateTime?
+  evidence   Json? // dados do provedor, IP, carimbo de tempo, arquivo escaneado etc.
+  createdAt  DateTime         @default(now())
+  updatedAt  DateTime         @updatedAt
+
+  company  Company  @relation(fields: [companyId], references: [id], onDelete: Restrict)
+  training Training @relation(fields: [trainingId, companyId], references: [id, companyId], onDelete: Cascade)
+
+  @@unique([trainingId, signerRole])
+}
