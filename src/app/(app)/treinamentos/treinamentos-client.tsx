@@ -473,6 +473,14 @@ export function TreinamentosClient({
                       >
                         Ver
                       </a>
+                      <a
+                        href={`/api/trainings/${t.id}/pdf`}
+                        download
+                        className="text-xs font-medium"
+                        style={{ color: "var(--muted-foreground)" }}
+                      >
+                        PDF
+                      </a>
                       {isAdmin && t.status === "ISSUED" && (
                         <button
                           onClick={() => {
