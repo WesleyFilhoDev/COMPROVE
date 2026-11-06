@@ -75,8 +75,8 @@ export default function LandingPage() {
           {/* Hero */}
           <section id="topo" style={{ maxWidth: 1200, margin: "0 auto", padding: "56px 24px 96px", display: "flex", flexWrap: "wrap", gap: 56, alignItems: "center" }}>
             <div style={{ flex: "1 1 500px", minWidth: 0, display: "flex", flexDirection: "column", gap: 28 }}>
-              <Logo size={56} tone="negative" />
-              <h1 style={{ margin: 0, fontFamily: "var(--font-display)", fontSize: 48, lineHeight: "56px", fontWeight: 800, letterSpacing: "-0.025em", color: "#FFFFFF", maxWidth: 560 }}>
+              <div className="hero-animate" style={{ animationDelay: "0ms" }}><Logo size={56} tone="negative" /></div>
+              <h1 className="hero-animate" style={{ margin: 0, fontFamily: "var(--font-display)", fontSize: 48, lineHeight: "56px", fontWeight: 800, letterSpacing: "-0.025em", color: "#FFFFFF", maxWidth: 560, animationDelay: "80ms" }}>
                 Treinamento dado é treinamento{" "}
                 <span style={{ color: "var(--azul-sinal)", whiteSpace: "nowrap" }}>
                   comprovado
@@ -85,10 +85,10 @@ export default function LandingPage() {
                   </svg>
                 </span>
               </h1>
-              <p style={{ margin: 0, fontSize: 18, lineHeight: "28px", color: "var(--sidebar-foreground)", maxWidth: 540 }}>
+              <p className="hero-animate" style={{ margin: 0, fontSize: 18, lineHeight: "28px", color: "var(--sidebar-foreground)", maxWidth: 540, animationDelay: "160ms" }}>
                 O Comproved registra quem ministrou, quem recebeu, a data e o horário de cada treinamento, coleta a assinatura dos dois lados e entrega um comprovante que qualquer pessoa pode conferir.
               </p>
-              <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: 24 }}>
+              <div className="hero-animate" style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: 24, animationDelay: "240ms" }}>
                 <Link href="/cadastro" className="cpv-btn cpv-btn--secondary cpv-btn--lg">Criar conta</Link>
                 <a href="#como-funciona" className="lp-link-dark" style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "10px 2px", fontSize: 15 }}>
                   Ver como funciona
@@ -97,7 +97,7 @@ export default function LandingPage() {
                   </svg>
                 </a>
               </div>
-              <div style={{ display: "flex", flexWrap: "wrap", gap: 8, paddingTop: 8 }}>
+              <div className="hero-animate" style={{ display: "flex", flexWrap: "wrap", gap: 8, paddingTop: 8, animationDelay: "320ms" }}>
                 {["quem ministrou", "quem recebeu", "data", "horário", "assinaturas"].map((tag) => (
                   <span key={tag} style={{ height: 28, padding: "0 12px", display: "inline-flex", alignItems: "center", borderRadius: "var(--radius-full)", border: "1px solid var(--sidebar-border)", background: "var(--sidebar-accent)", fontFamily: "var(--font-mono)", fontSize: 12, color: "var(--brand-300)" }}>
                     {tag}
@@ -107,7 +107,7 @@ export default function LandingPage() {
             </div>
 
             {/* Hero card */}
-            <div style={{ flex: "1 1 460px", minWidth: 0, position: "relative", padding: "36px 0 44px 16px", boxSizing: "border-box" }}>
+            <div className="hero-animate" style={{ flex: "1 1 460px", minWidth: 0, position: "relative", padding: "36px 0 44px 16px", boxSizing: "border-box", animationDelay: "200ms" }}>
               <div style={{ background: "var(--card)", color: "var(--card-foreground)", borderRadius: "var(--radius-xl)", boxShadow: "var(--shadow-lg)", padding: 28, display: "flex", flexDirection: "column", gap: 16 }}>
                 <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "space-between", alignItems: "center", gap: 12 }}>
                   <span style={{ fontSize: 12, lineHeight: "16px", fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--link)" }}>Comprovante de treinamento</span>
