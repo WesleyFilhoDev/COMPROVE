@@ -87,8 +87,14 @@ export function POST(req: NextRequest) {
       rows,
     };
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const stream = await renderToStream(React.createElement(TrainingReport, { data: reportData }) as any);
+    let stream;
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      stream = await renderToStream(React.createElement(TrainingReport, { data: reportData }) as any);
+    } catch (err) {
+      console.error("[PDF Export] renderToStream error:", err);
+      return NextResponse.json({ error: "Falha ao gerar relatório PDF." }, { status: 500 });
+    }
 
     return new NextResponse(stream as unknown as ReadableStream, {
       headers: {

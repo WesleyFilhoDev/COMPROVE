@@ -170,6 +170,7 @@ export type CertificateSignature = {
   signerRole: "INSTRUCTOR" | "TRAINEE";
   status: "PENDING" | "SIGNED";
   signedAt: Date | null;
+  signatureImage?: string | null;
 };
 
 export type CertificateData = {
@@ -186,6 +187,7 @@ export type CertificateData = {
   contentMinistrado: string | null;
   startsAt: Date;
   endsAt: Date;
+  createdAt: Date;
   signatures: CertificateSignature[];
   qrCodeDataUrl: string;
   appUrl: string;
@@ -215,7 +217,7 @@ export function TrainingCertificate({ data }: { data: CertificateData }) {
             <Text style={s.codeLabel}>Código de verificação</Text>
             <Text style={s.codeValue}>{data.verificationCode}</Text>
             <Text style={[s.codeLabel, { marginTop: 4 }]}>Emitido em</Text>
-            <Text style={s.fieldValueMono}>{fmtDateTime(data.startsAt)}</Text>
+            <Text style={s.fieldValueMono}>{fmtDateTime(data.createdAt)}</Text>
           </View>
         </View>
 
@@ -304,6 +306,9 @@ export function TrainingCertificate({ data }: { data: CertificateData }) {
                       : "Pendente"}
                   </Text>
                 </View>
+                {sig.status === "SIGNED" && sig.signatureImage && (
+                  <Image src={sig.signatureImage} style={{ width: "100%", height: 40, objectFit: "contain", marginTop: 4 }} />
+                )}
               </View>
             ))}
           </View>

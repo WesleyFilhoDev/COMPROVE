@@ -29,7 +29,7 @@ export async function PATCH(req: NextRequest) {
     const body = await req.json();
   const parsed = z
     .object({
-      name: z.string().min(2).max(200).optional(),
+      name: z.string().trim().min(2).max(200).optional(),
       jobTitle: z.string().min(2).max(100).optional(),
     })
     .refine((d) => d.name !== undefined || d.jobTitle !== undefined, { message: "Nada para atualizar." })

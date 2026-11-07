@@ -5,10 +5,13 @@ import { tenantDb } from "@/server/db/tenant";
 
 export function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   return withAuth({ roles: ["ADMIN", "COLLABORATOR"] }, async (_req, { user }) => {
+    if (!user.companyId) {
+      return NextResponse.json({ error: "Sem empresa vinculada." }, { status: 403 });
+    }
     const { id } = await params;
     const url = new URL(req.url);
     const role = url.searchParams.get("role") === "INSTRUCTOR" ? "INSTRUCTOR" : "TRAINEE";
-    const db = tenantDb(user.companyId as string);
+    const db = tenantDb(user.companyId);
 
     // Try to find existing signature for this role
     let signature = await db.signature.findFirst({

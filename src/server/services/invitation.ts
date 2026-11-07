@@ -3,7 +3,6 @@ import { db } from "@/server/db/client";
 import type { TenantDb } from "@/server/db/tenant";
 import {
   createInvitation,
-  findInvitationByTokenHash,
   listInvitations,
   revokeInvitation,
   updateInvitationToken,
@@ -129,8 +128,11 @@ export async function acceptInvitation(
       );
     }
 
-    // Fetch the invitation to get companyId, phone, jobTitle
-    const invitation = await findInvitationByTokenHash(tokenHash);
+    // Fetch the invitation to get companyId, phone, jobTitle (inside tx to avoid stale read)
+    const invitation = await tx.invitation.findUnique({
+      where: { tokenHash },
+      select: { companyId: true, phone: true, jobTitle: true },
+    });
     if (!invitation) throw new InvitationError("Convite não encontrado.", "NOT_FOUND");
 
     // Bind user to company

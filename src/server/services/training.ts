@@ -97,22 +97,8 @@ export async function emitTraining(
     );
   }
 
-  // 5. Generate verification code with up to 5 retries on collision
-  let verificationCode = "";
-  for (let attempt = 0; attempt < 5; attempt++) {
-    const candidate = generateVerificationCode();
-    const existing = await db.training.findUnique({
-      where: { verificationCode: candidate },
-      select: { id: true },
-    });
-    if (!existing) {
-      verificationCode = candidate;
-      break;
-    }
-  }
-  if (!verificationCode) {
-    throw new Error("Não foi possível gerar um código de verificação único. Tente novamente.");
-  }
+  // 5. Generate verification code
+  const verificationCode = generateVerificationCode();
 
   // 6. Compute content hash
   const contentHash = computeContentHash({
@@ -129,8 +115,7 @@ export async function emitTraining(
     templateVersion: 1,
   });
 
-  // 7. Create training
-  const training = await modelCreate(tenantDb, {
+  const trainingParams = {
     instructorId: data.instructorId,
     trainingTypeId: data.trainingTypeId,
     startsAt,
@@ -144,12 +129,23 @@ export async function emitTraining(
     declarationTextSnapshot: trainingType.declarationText ?? null,
     companyNameSnapshot: company.name,
     companyCnpjSnapshot: company.cnpj!,
-    verificationCode,
     contentHash,
     templateVersion: 1,
     traineePhone: data.traineePhone ?? null,
     contentMinistrado: data.contentMinistrado ?? null,
-  });
+  };
+
+  // 7. Create training (retry once on verificationCode collision)
+  let training;
+  try {
+    training = await modelCreate(tenantDb, { ...trainingParams, verificationCode });
+  } catch (err: unknown) {
+    if ((err as { code?: string }).code === "P2002") {
+      training = await modelCreate(tenantDb, { ...trainingParams, verificationCode: generateVerificationCode() });
+    } else {
+      throw err;
+    }
+  }
 
   // 8. Create signatures (INSTRUCTOR + TRAINEE, both with sign tokens)
   const instructorToken = crypto.randomBytes(32).toString("hex");

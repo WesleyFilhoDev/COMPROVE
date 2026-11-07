@@ -203,6 +203,7 @@ export function ConfiguracoesClient({ company: initial }: { company: Company }) 
   // Address state
   const [zipCode, setZipCode] = useState(initial.zipCode ? formatZip(initial.zipCode) : "");
   const [zipFetching, setZipFetching] = useState(false);
+  const [zipError, setZipError] = useState<string | null>(null);
   const [addrEditing, setAddrEditing] = useState(false);
   const [addrFields, setAddrFields] = useState({
     street: initial.street ?? "",
@@ -249,6 +250,7 @@ export function ConfiguracoesClient({ company: initial }: { company: Company }) 
     const digits = zip.replace(/\D/g, "");
     if (digits.length !== 8) return;
     setZipFetching(true);
+    setZipError(null);
     try {
       const res = await fetch(`https://viacep.com.br/ws/${digits}/json/`);
       if (res.ok) {
@@ -262,6 +264,8 @@ export function ConfiguracoesClient({ company: initial }: { company: Company }) 
             state: data.uf ?? f.state,
           }));
           setAddrEditing(true);
+        } else {
+          setZipError("CEP não encontrado.");
         }
       }
     } finally {
@@ -425,13 +429,14 @@ export function ConfiguracoesClient({ company: initial }: { company: Company }) 
                     <input
                       type="text"
                       value={zipCode}
-                      onChange={(e) => setZipCode(formatZip(e.target.value))}
+                      onChange={(e) => { setZipCode(formatZip(e.target.value)); setZipError(null); }}
                       onBlur={() => fetchZip(zipCode)}
                       placeholder="00000-000"
                       maxLength={9}
                       style={{ ...inputStyle, maxWidth: 140, fontFamily: "var(--font-mono)" }}
                     />
                     {zipFetching && <span style={{ fontSize: 13, color: "var(--muted-foreground)", alignSelf: "center" }}>Buscando…</span>}
+                    {zipError && <span style={{ fontSize: 13, color: "var(--destructive)", alignSelf: "center" }}>{zipError}</span>}
                   </div>
                 </div>
 

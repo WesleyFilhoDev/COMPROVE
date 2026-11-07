@@ -1081,10 +1081,13 @@ export function TreinamentosClient({
     setSignLinkLoading(true);
     const res = await fetch(`/api/trainings/${t.id}/sign-token`);
     setSignLinkLoading(false);
-    if (res.ok) {
-      const data = (await res.json()) as { signToken: string };
-      setSignLinkToken(data.signToken);
+    if (!res.ok) {
+      setSignLinkTraining(null);
+      alert("Erro ao obter link de assinatura. Tente novamente.");
+      return;
     }
+    const data = (await res.json()) as { signToken: string };
+    setSignLinkToken(data.signToken);
   }
 
   async function openInstructorSignLink(t: TrainingRow) {
@@ -1390,7 +1393,7 @@ export function TreinamentosClient({
                             </MenuItem>
                           );
                         })()}
-                        {isAdmin && t.status === "ISSUED" && (
+                        {(isAdmin || currentUserId === t.instructor.id) && t.status === "ISSUED" && (
                           <MenuItem onClick={() => setEditTraining(t)}>
                             <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M9.5 2.5a1.2 1.2 0 0 1 1.7 1.7l-7 7-2.2.5.5-2.2 7-7Z" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/></svg>
                             Editar treinamento

@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
 import { db } from "@/server/db/client";
 import { withAuth } from "@/server/auth/with-auth";
 import { trainingCreateSchema } from "@/server/validators/training";
@@ -9,7 +10,12 @@ export const GET = withAuth(
   { roles: ["ADMIN", "COLLABORATOR"] },
   async (req: NextRequest, { user, db: tenantDb }) => {
     const { searchParams } = new URL(req.url);
-    const status = searchParams.get("status") as "ISSUED" | "CANCELED" | null;
+    const statusRaw = searchParams.get("status");
+    const statusParsed = z.enum(["ISSUED", "CANCELED"]).optional().safeParse(statusRaw ?? undefined);
+    if (!statusParsed.success) {
+      return NextResponse.json({ error: "Status inválido." }, { status: 422 });
+    }
+    const status = statusParsed.data ?? null;
     const instructorId = searchParams.get("instructorId") ?? undefined;
     const trainingTypeId = searchParams.get("trainingTypeId") ?? undefined;
 

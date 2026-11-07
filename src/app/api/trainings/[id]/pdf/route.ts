@@ -21,6 +21,13 @@ export function GET(req: NextRequest, { params }: { params: Promise<{ id: string
       include: {
         signatures: {
           orderBy: [{ signerRole: "asc" }, { createdAt: "asc" }],
+          select: {
+            signerName: true,
+            signerRole: true,
+            status: true,
+            signedAt: true,
+            signatureImage: true,
+          },
         },
       },
     });
@@ -34,7 +41,7 @@ export function GET(req: NextRequest, { params }: { params: Promise<{ id: string
     }
 
     const appUrl = process.env.BETTER_AUTH_URL ?? "http://localhost:3000";
-    const verifyUrl = `${appUrl}/verificar?codigo=${training.verificationCode}`;
+    const verifyUrl = `${appUrl}/verificar/${training.verificationCode}`;
 
     const qrCodeDataUrl = await QRCode.toDataURL(verifyUrl, {
       width: 200,
@@ -56,11 +63,13 @@ export function GET(req: NextRequest, { params }: { params: Promise<{ id: string
       contentMinistrado: training.contentMinistrado ?? null,
       startsAt: training.startsAt,
       endsAt: training.endsAt,
+      createdAt: training.createdAt,
       signatures: training.signatures.map((sig) => ({
         signerName: sig.signerName,
         signerRole: sig.signerRole,
         status: sig.status,
         signedAt: sig.signedAt,
+        signatureImage: sig.signatureImage ?? null,
       })),
       qrCodeDataUrl,
       appUrl,

@@ -33,7 +33,7 @@ export async function PATCH(req: NextRequest) {
   const body = await req.json();
   const parsed = z
     .object({
-      name: z.string().min(2).max(200).optional(),
+      name: z.string().trim().min(2).max(200).optional(),
       cnpj: z
         .string()
         .transform((v) => v.replace(/\D/g, ""))

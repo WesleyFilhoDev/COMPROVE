@@ -449,27 +449,33 @@ export default function AssinarPage() {
   async function handleSign() {
     if (!agreed || !signatureImage) return;
     setPending(true);
-    const res = await fetch(`/api/sign/${token}`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ signatureImage }),
-    });
-    setPending(false);
-    if (res.ok) {
-      const data = (await res.json()) as {
-        ok: boolean;
-        signerRole?: SignerRole;
-        trainee?: TraineeInfo;
-      };
-      if (data.signerRole === "INSTRUCTOR" && data.trainee) {
-        setTraineeInfo(data.trainee);
+    try {
+      const res = await fetch(`/api/sign/${token}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ signatureImage }),
+      });
+      if (res.ok) {
+        const data = (await res.json()) as {
+          ok: boolean;
+          signerRole?: SignerRole;
+          trainee?: TraineeInfo;
+        };
+        if (data.signerRole === "INSTRUCTOR" && data.trainee) {
+          setTraineeInfo(data.trainee);
+        }
+        setState("signed");
+        return;
       }
-      setState("signed");
-      return;
+      const data = (await res.json()) as { error?: string };
+      setErrorMsg(data.error ?? "Erro ao confirmar assinatura.");
+      setState("error");
+    } catch {
+      setErrorMsg("Erro de rede. Verifique sua conexão e tente novamente.");
+      setState("error");
+    } finally {
+      setPending(false);
     }
-    const data = (await res.json()) as { error?: string };
-    setErrorMsg(data.error ?? "Erro ao confirmar assinatura.");
-    setState("error");
   }
 
   const canSubmit = agreed && !!signatureImage && !pending;
