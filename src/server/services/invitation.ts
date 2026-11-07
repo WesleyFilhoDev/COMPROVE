@@ -38,7 +38,7 @@ function expiresInDays(days: number): Date {
 }
 
 function buildWaLink(phone: string, name: string, token: string): string {
-  const baseUrl = (process.env.BETTER_AUTH_URL ?? "http://localhost:3000").replace(/\/$/, "");
+  const baseUrl = (process.env.NEXT_PUBLIC_APP_URL ?? process.env.BETTER_AUTH_URL ?? "http://localhost:3000").replace(/\/$/, "");
   const encodedText = encodeURIComponent(
     `Olá ${name}, você foi convidado para o Comproved. Acesse o link para aceitar o convite: ${baseUrl}/convite/${token}`,
   );
