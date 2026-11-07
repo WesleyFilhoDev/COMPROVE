@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo, useRef, useEffect } from "react";
+import { createPortal } from "react-dom";
 import Link from "next/link";
 import { maskCpf } from "@/lib/format";
 
@@ -604,26 +605,38 @@ function CancelModal({
 
 function RowMenu({ children }: { children: React.ReactNode }) {
   const [open, setOpen] = useState(false);
-  const ref = useRef<HTMLDivElement>(null);
+  const [pos, setPos] = useState({ top: 0, right: 0 });
+  const btnRef = useRef<HTMLButtonElement>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!open) return;
     function handler(e: MouseEvent) {
-      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+      if (
+        menuRef.current && !menuRef.current.contains(e.target as Node) &&
+        btnRef.current && !btnRef.current.contains(e.target as Node)
+      ) setOpen(false);
     }
     document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
   }, [open]);
 
+  function handleOpen() {
+    if (!btnRef.current) return;
+    const rect = btnRef.current.getBoundingClientRect();
+    setPos({ top: rect.bottom + 4, right: window.innerWidth - rect.right });
+    setOpen((v) => !v);
+  }
+
   return (
-    <div ref={ref} style={{ position: "relative", display: "inline-block" }}>
+    <div style={{ display: "inline-block" }}>
       <button
-        onClick={() => setOpen((v) => !v)}
+        ref={btnRef}
+        onClick={handleOpen}
         style={{
           background: "none", border: "1px solid var(--border)", cursor: "pointer",
           borderRadius: "var(--radius-md)", padding: "4px 8px", display: "flex",
-          alignItems: "center", color: "var(--muted-foreground)",
-          transition: "background 0.1s",
+          alignItems: "center", color: "var(--muted-foreground)", transition: "background 0.1s",
         }}
         onMouseEnter={(e) => (e.currentTarget.style.background = "var(--nevoa)")}
         onMouseLeave={(e) => (e.currentTarget.style.background = "none")}
@@ -636,18 +649,20 @@ function RowMenu({ children }: { children: React.ReactNode }) {
         </svg>
       </button>
 
-      {open && (
+      {open && typeof document !== "undefined" && createPortal(
         <div
+          ref={menuRef}
           style={{
-            position: "absolute", right: 0, top: "calc(100% + 4px)", zIndex: 60,
+            position: "fixed", top: pos.top, right: pos.right, zIndex: 9999,
             background: "var(--card)", border: "1px solid var(--border)",
-            borderRadius: "var(--radius-lg)", boxShadow: "0 8px 24px rgba(15,26,46,0.12)",
-            minWidth: 160, padding: "4px 0", overflow: "hidden",
+            borderRadius: "var(--radius-lg)", boxShadow: "0 8px 24px rgba(15,26,46,0.14)",
+            minWidth: 200, padding: "4px 0",
           }}
           onClick={() => setOpen(false)}
         >
           {children}
-        </div>
+        </div>,
+        document.body,
       )}
     </div>
   );
