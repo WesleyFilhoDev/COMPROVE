@@ -1,8 +1,8 @@
 import { z } from "zod";
 
 export const trainingCreateSchema = z.object({
-  trainingTypeId: z.string().uuid("ID do tipo de treinamento inválido."),
-  instructorId: z.string().uuid("ID do instrutor inválido."),
+  trainingTypeId: z.string().min(1, "Tipo de treinamento é obrigatório."),
+  instructorId: z.string().min(1, "Instrutor é obrigatório."),
   startsAt: z.string().min(1, "Data de início é obrigatória."),
   endsAt: z.string().min(1, "Data de término é obrigatória."),
   traineeName: z
