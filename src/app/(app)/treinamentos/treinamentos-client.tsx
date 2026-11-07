@@ -720,7 +720,7 @@ function EditTrainingPanel({
   trainingTypes: TrainingType[];
   collaborators: Collaborator[];
   onClose: () => void;
-  onSaved: (t: TrainingRow) => void;
+  onSaved: (updated: TrainingRow, created: TrainingRow[]) => void;
 }) {
   const [fields, setFields] = useState({
     trainingTypeId: training.trainingType.id,
@@ -731,41 +731,77 @@ function EditTrainingPanel({
     traineeCpf: maskCpf(training.traineeCpf),
     clientCompanyName: training.clientCompanyName,
   });
+  const [extraTrainees, setExtraTrainees] = useState<TraineeRow[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
+  const [progress, setProgress] = useState<{ done: number; total: number } | null>(null);
 
   function set(key: keyof typeof fields) {
     return (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) =>
       setFields((p) => ({ ...p, [key]: e.target.value }));
   }
 
+  function setExtra(idx: number, key: keyof TraineeRow, val: string) {
+    setExtraTrainees((prev) => prev.map((t, i) => i === idx ? { ...t, [key]: val } : t));
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
     setPending(true);
+    const total = 1 + extraTrainees.length;
+    setProgress({ done: 0, total });
 
-    const res = await fetch(`/api/trainings/${training.id}`, {
+    // 1. Update existing training
+    const patchRes = await fetch(`/api/trainings/${training.id}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ ...fields, traineeCpf: fields.traineeCpf.replace(/\D/g, "") }),
     });
 
-    setPending(false);
-
-    if (!res.ok) {
-      const json = (await res.json()) as { error: string | { formErrors?: string[]; fieldErrors?: Record<string, string[]> } };
+    if (!patchRes.ok) {
+      const json = (await patchRes.json()) as { error: string | { formErrors?: string[]; fieldErrors?: Record<string, string[]> } };
       let msg = "Erro ao salvar.";
       if (typeof json.error === "string") msg = json.error;
       else if (json.error?.fieldErrors) {
         const first = Object.values(json.error.fieldErrors).flat()[0];
         if (first) msg = first;
       }
-      setError(msg);
-      return;
+      setPending(false); setProgress(null); setError(msg); return;
     }
 
-    const json = (await res.json()) as { training: TrainingRow };
-    onSaved(json.training);
+    const updated = ((await patchRes.json()) as { training: TrainingRow }).training;
+    setProgress({ done: 1, total });
+
+    // 2. Create additional trainees
+    const created: TrainingRow[] = [];
+    for (let i = 0; i < extraTrainees.length; i++) {
+      const trainee = extraTrainees[i];
+      const res = await fetch("/api/trainings", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          trainingTypeId: fields.trainingTypeId,
+          instructorId: fields.instructorId,
+          startsAt: fields.startsAt,
+          endsAt: fields.endsAt,
+          clientCompanyName: fields.clientCompanyName,
+          traineeName: trainee.name,
+          traineeCpf: trainee.cpf.replace(/\D/g, ""),
+        }),
+      });
+      if (!res.ok) {
+        const json = (await res.json()) as { error: string | { formErrors?: string[]; fieldErrors?: Record<string, string[]> } };
+        let msg = `Erro ao criar treinamento para ${trainee.name || `treinando ${i + 2}`}.`;
+        if (typeof json.error === "string") msg = json.error;
+        setPending(false); setProgress(null); setError(msg); return;
+      }
+      created.push(((await res.json()) as { training: TrainingRow }).training);
+      setProgress({ done: 2 + i, total });
+    }
+
+    setPending(false); setProgress(null);
+    onSaved(updated, created);
   }
 
   const inputStyle: React.CSSProperties = {
@@ -814,27 +850,58 @@ function EditTrainingPanel({
           </div>
 
           <div>
-            <label style={labelStyle}>Nome do treinando</label>
-            <input type="text" required value={fields.traineeName} onChange={set("traineeName")} style={inputStyle} />
-          </div>
-
-          <div>
-            <label style={labelStyle}>CPF do treinando</label>
-            <input type="text" required maxLength={14} value={fields.traineeCpf}
-              onChange={(e) => setFields((p) => ({ ...p, traineeCpf: maskCpf(e.target.value) }))}
-              placeholder="000.000.000-00" style={inputStyle} />
-          </div>
-
-          <div>
             <label style={labelStyle}>Empresa cliente</label>
             <input type="text" required value={fields.clientCompanyName} onChange={set("clientCompanyName")} style={inputStyle} />
           </div>
+
+          {/* Treinando existente */}
+          <div style={{ background: "var(--nevoa)", border: "1px solid var(--border)", borderRadius: "var(--radius-md)", padding: "12px 12px 10px" }}>
+            <span style={{ display: "block", fontSize: 12, fontWeight: 600, color: "var(--muted-foreground)", marginBottom: 8 }}>
+              Treinando (existente)
+            </span>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+              <input type="text" required placeholder="Nome completo" value={fields.traineeName}
+                onChange={set("traineeName")} style={inputStyle} />
+              <input type="text" required placeholder="000.000.000-00" maxLength={14} value={fields.traineeCpf}
+                onChange={(e) => setFields((p) => ({ ...p, traineeCpf: maskCpf(e.target.value) }))}
+                style={inputStyle} />
+            </div>
+          </div>
+
+          {/* Treinandos adicionais */}
+          {extraTrainees.map((trainee, idx) => (
+            <div key={idx} style={{ background: "var(--nevoa)", border: "1px solid var(--border)", borderRadius: "var(--radius-md)", padding: "12px 12px 10px" }}>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
+                <span style={{ fontSize: 12, fontWeight: 600, color: "var(--muted-foreground)" }}>Treinando {idx + 2}</span>
+                <button type="button" onClick={() => setExtraTrainees((p) => p.filter((_, i) => i !== idx))}
+                  style={{ background: "none", border: "none", cursor: "pointer", color: "var(--destructive)", padding: 0, fontSize: 12 }}>
+                  Remover
+                </button>
+              </div>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+                <input type="text" required placeholder="Nome completo" value={trainee.name}
+                  onChange={(e) => setExtra(idx, "name", e.target.value)} style={inputStyle} />
+                <input type="text" required placeholder="000.000.000-00" maxLength={14} value={trainee.cpf}
+                  onChange={(e) => setExtra(idx, "cpf", maskCpf(e.target.value))} style={inputStyle} />
+              </div>
+            </div>
+          ))}
+
+          <button type="button" onClick={() => setExtraTrainees((p) => [...p, { name: "", cpf: "" }])}
+            style={{ display: "flex", alignItems: "center", gap: 4, background: "none", border: "none", cursor: "pointer", fontSize: 12, fontWeight: 600, color: "var(--azul-eletrico)", padding: 0, alignSelf: "flex-start" }}>
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 1v12M1 7h12" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"/></svg>
+            Adicionar treinando
+          </button>
 
           {error && <p style={{ margin: 0, fontSize: 13, color: "var(--destructive)" }}>{error}</p>}
 
           <div style={{ marginTop: "auto", paddingTop: 8, display: "flex", gap: 10 }}>
             <button type="submit" disabled={pending} className="cpv-btn cpv-btn--primary" style={{ flex: 1 }}>
-              {pending ? "Salvando…" : "Salvar alterações"}
+              {progress
+                ? `Salvando ${progress.done}/${progress.total}…`
+                : extraTrainees.length > 0
+                  ? `Salvar + emitir ${extraTrainees.length} novo${extraTrainees.length > 1 ? "s" : ""}`
+                  : "Salvar alterações"}
             </button>
             <button type="button" onClick={onClose} style={{ flexShrink: 0, height: 40, padding: "0 14px", border: "none", borderRadius: "var(--radius-md)", background: "none", cursor: "pointer", color: "var(--muted-foreground)", fontSize: 13, fontWeight: 500 }}>
               Cancelar
@@ -1282,8 +1349,11 @@ export function TreinamentosClient({
           trainingTypes={trainingTypes}
           collaborators={collaborators}
           onClose={() => setEditTraining(null)}
-          onSaved={(updated) => {
-            setTrainings((prev) => prev.map((t) => (t.id === updated.id ? updated : t)));
+          onSaved={(updated, created) => {
+            setTrainings((prev) => [
+              ...created,
+              ...prev.map((t) => (t.id === updated.id ? updated : t)),
+            ]);
             setEditTraining(null);
           }}
         />
