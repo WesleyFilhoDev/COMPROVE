@@ -60,6 +60,12 @@ export default async function TreinamentosPage() {
     cancelReason: t.cancelReason ?? null,
     instructor: t.instructor,
     trainingType: t.trainingType,
+    signatures: t.signatures.map((s) => ({
+      signerRole: s.signerRole,
+      status: s.status,
+      signToken: s.signToken ?? null,
+      signedAt: s.signedAt?.toISOString() ?? null,
+    })),
   }));
 
   const serializedTypes = trainingTypes.map((tt) => ({

@@ -8,6 +8,13 @@ import { maskCpf } from "@/lib/format";
 
 type TrainingStatus = "ISSUED" | "CANCELED";
 
+type SignatureRow = {
+  signerRole: string;
+  status: string;
+  signToken: string | null;
+  signedAt: string | null;
+};
+
 type TrainingRow = {
   id: string;
   status: TrainingStatus;
@@ -21,6 +28,7 @@ type TrainingRow = {
   cancelReason: string | null;
   instructor: { id: string; name: string; jobTitle: string | null };
   trainingType: { id: string; name: string };
+  signatures: SignatureRow[];
 };
 
 type TrainingType = { id: string; name: string };
@@ -535,6 +543,115 @@ function CancelModal({
   );
 }
 
+// ─── Sign Link Panel ─────────────────────────────────────────────────────────
+
+function SignLinkPanel({
+  traineeName,
+  trainingType,
+  signUrl,
+  isSigned,
+  signedAt,
+  onClose,
+}: {
+  traineeName: string;
+  trainingType: string;
+  signUrl: string;
+  isSigned: boolean;
+  signedAt: string | null;
+  onClose: () => void;
+}) {
+  const [copied, setCopied] = useState(false);
+
+  function copyLink() {
+    void navigator.clipboard.writeText(signUrl).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2500);
+    });
+  }
+
+  const waLink = `https://wa.me/?text=${encodeURIComponent(
+    `Olá ${traineeName}! Para confirmar sua participação no treinamento ${trainingType}, acesse o link abaixo e assine digitalmente:\n${signUrl}`,
+  )}`;
+
+  return (
+    <>
+      <div style={{ position: "fixed", inset: 0, zIndex: 40, background: "rgba(15,26,46,0.3)" }} onClick={onClose} />
+      <div style={{
+        position: "fixed", top: 0, right: 0, bottom: 0, zIndex: 50,
+        width: "100%", maxWidth: 440,
+        background: "var(--card)", borderLeft: "1px solid var(--border)",
+        boxShadow: "-8px 0 32px rgba(15,26,46,0.12)",
+        display: "flex", flexDirection: "column", overflowY: "auto",
+      }}>
+        {/* Header */}
+        <div style={{ padding: "20px 24px 16px", borderBottom: "1px solid var(--border)", display: "flex", alignItems: "flex-start", justifyContent: "space-between" }}>
+          <div>
+            <h2 style={{ fontFamily: "var(--font-display)", fontWeight: 800, fontSize: 17, color: "var(--tinta)", margin: "0 0 3px" }}>
+              Link de assinatura
+            </h2>
+            <p style={{ margin: 0, fontSize: 12, color: "var(--muted-foreground)" }}>
+              {traineeName} · {trainingType}
+            </p>
+          </div>
+          <button onClick={onClose} style={{ background: "none", border: "none", cursor: "pointer", color: "var(--muted-foreground)", padding: 6 }}>
+            <XIcon />
+          </button>
+        </div>
+
+        <div style={{ padding: 24, display: "flex", flexDirection: "column", gap: 20 }}>
+          {/* Status */}
+          {isSigned ? (
+            <div style={{ background: "var(--success-soft)", border: "1px solid var(--success-border)", borderRadius: "var(--radius-lg)", padding: "12px 16px", display: "flex", alignItems: "center", gap: 10 }}>
+              <span style={{ fontSize: 20 }}>✓</span>
+              <div>
+                <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: "var(--success)" }}>Treinamento já assinado</p>
+                {signedAt && (
+                  <p style={{ margin: "2px 0 0", fontSize: 12, color: "var(--success)" }}>
+                    em {new Date(signedAt).toLocaleString("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" })}
+                  </p>
+                )}
+              </div>
+            </div>
+          ) : (
+            <div style={{ background: "var(--warning-soft)", border: "1px solid var(--warning-border)", borderRadius: "var(--radius-lg)", padding: "12px 16px" }}>
+              <p style={{ margin: 0, fontSize: 13, fontWeight: 600, color: "var(--warning)" }}>Aguardando assinatura do treinando</p>
+              <p style={{ margin: "3px 0 0", fontSize: 12, color: "var(--warning)" }}>Envie o link abaixo para {traineeName}.</p>
+            </div>
+          )}
+
+          {/* Link box */}
+          <div>
+            <p style={{ margin: "0 0 8px", fontSize: 13, fontWeight: 600, color: "var(--foreground)" }}>Link de assinatura</p>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, background: "var(--nevoa)", border: "1px solid var(--border)", borderRadius: "var(--radius-md)", padding: "8px 12px" }}>
+              <span style={{ flex: 1, fontSize: 12, color: "var(--azul-eletrico)", wordBreak: "break-all", fontFamily: "var(--font-mono)" }}>{signUrl}</span>
+              <button
+                onClick={copyLink}
+                title="Copiar link"
+                style={{ flexShrink: 0, background: "none", border: "none", cursor: "pointer", color: copied ? "var(--success)" : "var(--muted-foreground)", padding: 4, display: "flex", alignItems: "center" }}
+              >
+                <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><rect x="5" y="5" width="9" height="9" rx="1.5" stroke="currentColor" strokeWidth="1.5"/><path d="M11 5V3.5A1.5 1.5 0 0 0 9.5 2h-6A1.5 1.5 0 0 0 2 3.5v6A1.5 1.5 0 0 0 3.5 11H5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>
+              </button>
+            </div>
+            {copied && <p style={{ margin: "4px 0 0", fontSize: 12, color: "var(--success)" }}>Link copiado!</p>}
+          </div>
+
+          {/* Actions */}
+          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+            <button onClick={copyLink} className="cpv-btn cpv-btn--primary" style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><rect x="5" y="5" width="9" height="9" rx="1.5" stroke="currentColor" strokeWidth="1.5"/><path d="M11 5V3.5A1.5 1.5 0 0 0 9.5 2h-6A1.5 1.5 0 0 0 2 3.5v6A1.5 1.5 0 0 0 3.5 11H5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>
+              {copied ? "Copiado!" : "Copiar link"}
+            </button>
+            <a href={waLink} target="_blank" rel="noopener noreferrer" className="cpv-btn cpv-btn--outline" style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, textDecoration: "none" }}>
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M13.5 2.5A6.9 6.9 0 0 0 8 0C3.58 0 0 3.58 0 8c0 1.41.37 2.75 1.01 3.91L0 16l4.19-1.1A7.93 7.93 0 0 0 8 16c4.42 0 8-3.58 8-8 0-2.14-.83-4.14-2.5-5.5ZM8 14.5a6.4 6.4 0 0 1-3.27-.9l-.23-.14-2.49.65.67-2.42-.16-.25A6.46 6.46 0 0 1 1.5 8c0-3.59 2.91-6.5 6.5-6.5S14.5 4.41 14.5 8 11.59 14.5 8 14.5Zm3.56-4.87c-.19-.1-1.14-.56-1.32-.63-.17-.06-.3-.1-.42.1-.13.19-.49.63-.6.75-.11.13-.22.14-.41.05-.19-.1-.8-.3-1.52-.95-.56-.5-.94-1.12-1.05-1.31-.11-.19-.01-.29.08-.38.09-.09.19-.23.29-.34.1-.12.13-.19.19-.32.07-.13.03-.24-.01-.34-.05-.1-.42-1.01-.58-1.38-.15-.36-.3-.31-.42-.32h-.36c-.12 0-.32.04-.49.24-.17.19-.64.63-.64 1.53s.66 1.77.75 1.9c.1.12 1.3 1.98 3.15 2.78.44.19.78.3 1.05.38.44.14.84.12 1.16.07.35-.05 1.09-.45 1.24-.88.15-.43.15-.8.1-.88-.04-.08-.17-.13-.36-.22Z" fill="currentColor"/></svg>
+              Enviar pelo WhatsApp
+            </a>
+          </div>
+        </div>
+      </div>
+    </>
+  );
+}
+
 // ─── Main component ───────────────────────────────────────────────────────────
 
 export function TreinamentosClient({
@@ -548,6 +665,7 @@ export function TreinamentosClient({
   const [search, setSearch] = useState("");
   const [filterStatus, setFilterStatus] = useState<TrainingStatus | "">("");
   const [showPanel, setShowPanel] = useState(false);
+  const [signLinkTraining, setSignLinkTraining] = useState<TrainingRow | null>(null);
   const [cancelId, setCancelId] = useState<string | null>(null);
   const [cancelPending, setCancelPending] = useState(false);
   const [cancelError, setCancelError] = useState<string | null>(null);
@@ -798,6 +916,27 @@ export function TreinamentosClient({
                         >
                           PDF
                         </a>
+                        {t.status === "ISSUED" && (() => {
+                          const traineeSig = t.signatures.find((s) => s.signerRole === "TRAINEE");
+                          if (!traineeSig?.signToken) return null;
+                          const isSigned = traineeSig.status === "SIGNED";
+                          return (
+                            <button
+                              onClick={() => setSignLinkTraining(t)}
+                              style={{
+                                background: "none",
+                                border: "none",
+                                cursor: "pointer",
+                                fontSize: 12,
+                                fontWeight: 600,
+                                color: isSigned ? "var(--success)" : "var(--azul-eletrico)",
+                                padding: 0,
+                              }}
+                            >
+                              {isSigned ? "✓ Assinado" : "Enviar link"}
+                            </button>
+                          );
+                        })()}
                         {isAdmin && t.status === "ISSUED" && (
                           <button
                             onClick={() => { setCancelId(t.id); setCancelError(null); }}
@@ -833,6 +972,25 @@ export function TreinamentosClient({
           onCreated={handleCreated}
         />
       )}
+
+      {/* Sign link panel */}
+      {signLinkTraining && (() => {
+        const traineeSig = signLinkTraining.signatures.find((s) => s.signerRole === "TRAINEE");
+        const signUrl = traineeSig?.signToken
+          ? `${typeof window !== "undefined" ? window.location.origin : ""}/assinar/${traineeSig.signToken}`
+          : "";
+        const isSigned = traineeSig?.status === "SIGNED";
+        return (
+          <SignLinkPanel
+            traineeName={signLinkTraining.traineeName}
+            trainingType={signLinkTraining.trainingType.name}
+            signUrl={signUrl}
+            isSigned={isSigned}
+            signedAt={traineeSig?.signedAt ?? null}
+            onClose={() => setSignLinkTraining(null)}
+          />
+        );
+      })()}
 
       {/* Cancel modal */}
       {cancelId && (

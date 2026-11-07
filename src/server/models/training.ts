@@ -11,6 +11,7 @@ export type TrainingFilters = {
 const trainingInclude = {
   instructor: { select: { id: true, name: true, jobTitle: true } },
   trainingType: { select: { id: true, name: true } },
+  signatures: { select: { signerRole: true, status: true, signToken: true, signedAt: true } },
 } as const;
 
 /** List trainings for a tenant with optional filters, ordered by startsAt desc. */

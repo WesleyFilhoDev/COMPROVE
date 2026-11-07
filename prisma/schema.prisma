@@ -226,6 +226,7 @@ model Signature {
   status     SignatureStatus  @default(PENDING)
   method     SignatureMethod?
   signedAt   DateTime?
+  signToken  String?          @unique // token para link público de assinatura (TRAINEE)
   evidence   Json? // dados do provedor, IP, carimbo de tempo, arquivo escaneado etc.
   createdAt  DateTime         @default(now())
   updatedAt  DateTime         @updatedAt

@@ -1,3 +1,4 @@
+import crypto from "crypto";
 import { db } from "@/server/db/client";
 import type { TenantDb } from "@/server/db/tenant";
 import { findCompanyById } from "@/server/models/company";
@@ -128,7 +129,7 @@ export async function emitTraining(
   });
 
   // 7. Create training
-  return modelCreate(tenantDb, {
+  const training = await modelCreate(tenantDb, {
     instructorId: data.instructorId,
     trainingTypeId: data.trainingTypeId,
     startsAt,
@@ -145,6 +146,30 @@ export async function emitTraining(
     contentHash,
     templateVersion: 1,
   });
+
+  // 8. Create signatures (INSTRUCTOR + TRAINEE with sign token)
+  const traineeToken = crypto.randomBytes(32).toString("hex");
+  await tenantDb.signature.createMany({
+    data: [
+      {
+        companyId,
+        trainingId: training.id,
+        signerRole: "INSTRUCTOR",
+        signerName: instructor.name,
+        status: "PENDING",
+      },
+      {
+        companyId,
+        trainingId: training.id,
+        signerRole: "TRAINEE",
+        signerName: data.traineeName,
+        status: "PENDING",
+        signToken: traineeToken,
+      },
+    ],
+  });
+
+  return training;
 }
 
 /** Cancel an existing training. */
