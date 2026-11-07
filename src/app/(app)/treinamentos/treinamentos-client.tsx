@@ -674,13 +674,18 @@ export function TreinamentosClient({
             onChange={(e) => setFilterStatus(e.target.value as TrainingStatus | "")}
             style={{
               height: 36,
-              padding: "0 32px 0 12px",
+              padding: "0 36px 0 12px",
               border: "1px solid var(--border)",
               borderRadius: "var(--radius-md)",
               background: "var(--card)",
               color: "var(--foreground)",
               fontSize: 13,
               outline: "none",
+              appearance: "none",
+              WebkitAppearance: "none",
+              backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M2 4l4 4 4-4' stroke='%236b7280' stroke-width='1.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")`,
+              backgroundRepeat: "no-repeat",
+              backgroundPosition: "right 10px center",
             }}
           >
             <option value="">Todos os status</option>
