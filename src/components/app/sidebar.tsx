@@ -97,6 +97,15 @@ function ArrowRightIcon() {
   );
 }
 
+function GearIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+      <circle cx="8" cy="8" r="2.5" stroke="currentColor" strokeWidth="1.5" />
+      <path d="M8 1v1.5M8 13.5V15M15 8h-1.5M2.5 8H1M12.95 3.05l-1.06 1.06M4.11 11.89l-1.06 1.06M12.95 12.95l-1.06-1.06M4.11 4.11 3.05 3.05" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+    </svg>
+  );
+}
+
 const ADMIN_NAV_SECTIONS = [
   {
     label: "GERAL",
@@ -111,6 +120,7 @@ const ADMIN_NAV_SECTIONS = [
       { label: "Colaboradores", href: "/colaboradores", icon: <PeopleIcon /> },
       { label: "Tipos de treinamento", href: "/tipos-de-treinamento", icon: <TagIcon /> },
       { label: "Relatórios", href: "/relatorios", icon: <BarChartIcon /> },
+      { label: "Configurações", href: "/configuracoes", icon: <GearIcon /> },
     ],
   },
 ];

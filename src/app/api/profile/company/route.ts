@@ -39,10 +39,29 @@ export async function PATCH(req: NextRequest) {
         .transform((v) => v.replace(/\D/g, ""))
         .pipe(z.string().length(14, "CNPJ deve ter 14 dígitos."))
         .optional(),
+      segment: z.string().max(100).optional().nullable(),
+      zipCode: z.string().max(8).optional().nullable(),
+      street: z.string().max(200).optional().nullable(),
+      number: z.string().max(20).optional().nullable(),
+      complement: z.string().max(100).optional().nullable(),
+      district: z.string().max(100).optional().nullable(),
+      city: z.string().max(100).optional().nullable(),
+      state: z.string().max(2).optional().nullable(),
     })
-    .refine((d) => d.name !== undefined || d.cnpj !== undefined, {
-      message: "Nenhum campo fornecido.",
-    })
+    .refine(
+      (d) =>
+        d.name !== undefined ||
+        d.cnpj !== undefined ||
+        d.segment !== undefined ||
+        d.zipCode !== undefined ||
+        d.street !== undefined ||
+        d.number !== undefined ||
+        d.complement !== undefined ||
+        d.district !== undefined ||
+        d.city !== undefined ||
+        d.state !== undefined,
+      { message: "Nenhum campo fornecido." },
+    )
     .safeParse(body);
 
   if (!parsed.success) {
@@ -65,14 +84,24 @@ export async function PATCH(req: NextRequest) {
     updateData.name = parsed.data.name;
     updateData.nameChangedAt = new Date();
   }
-  if (parsed.data.cnpj !== undefined) {
-    updateData.cnpj = parsed.data.cnpj;
-  }
+  if (parsed.data.cnpj !== undefined) updateData.cnpj = parsed.data.cnpj;
+  if (parsed.data.segment !== undefined) updateData.segment = parsed.data.segment;
+  if (parsed.data.zipCode !== undefined) updateData.zipCode = parsed.data.zipCode?.replace(/\D/g, "") || null;
+  if (parsed.data.street !== undefined) updateData.street = parsed.data.street;
+  if (parsed.data.number !== undefined) updateData.number = parsed.data.number;
+  if (parsed.data.complement !== undefined) updateData.complement = parsed.data.complement;
+  if (parsed.data.district !== undefined) updateData.district = parsed.data.district;
+  if (parsed.data.city !== undefined) updateData.city = parsed.data.city;
+  if (parsed.data.state !== undefined) updateData.state = parsed.data.state;
 
   const updated = await db.company.update({
     where: { id: user.companyId },
     data: updateData,
-    select: { id: true, name: true, cnpj: true, nameChangedAt: true },
+    select: {
+      id: true, name: true, cnpj: true, nameChangedAt: true,
+      segment: true, zipCode: true, street: true, number: true,
+      complement: true, district: true, city: true, state: true,
+    },
   });
 
   return NextResponse.json({ company: updated });
