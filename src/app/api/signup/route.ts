@@ -24,16 +24,26 @@ export async function POST(req: NextRequest) {
   const { name, email, password, phone, jobTitle, companyName, segment } = parsed.data;
 
   // 1. Cria o usuário via Better Auth
-  const signUpRes = await auth.api.signUpEmail({
+  let signUpRes: Awaited<ReturnType<typeof auth.api.signUpEmail>>;
+  try {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    body: { name, email, password } as any,
-  });
+    signUpRes = await auth.api.signUpEmail({ body: { name, email, password } as any });
+  } catch (err) {
+    console.error("[signup] signUpEmail threw:", err);
+    const msg = err instanceof Error ? err.message : String(err);
+    return NextResponse.json({ error: msg }, { status: 500 });
+  }
 
   if (!signUpRes?.user) {
     return NextResponse.json({ error: "Erro ao criar conta." }, { status: 400 });
   }
 
-  const userId = signUpRes.user.id;
+  // Busca o registro real pelo email (o ID retornado pelo Better Auth pode não bater)
+  const dbUser = await db.user.findFirst({ where: { email } });
+  if (!dbUser) {
+    return NextResponse.json({ error: "Usuário não encontrado após cadastro." }, { status: 500 });
+  }
+  const userId = dbUser.id;
 
   // 2. Cria empresa e vincula o usuário como ADMIN em uma transação
   await db.$transaction(async (tx) => {

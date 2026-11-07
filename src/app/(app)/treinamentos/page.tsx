@@ -7,6 +7,7 @@ import { tenantDb } from "@/server/db/tenant";
 import { listTrainings } from "@/server/models/training";
 import { listTrainingTypes } from "@/server/models/training-type";
 import type { UserRole } from "@/generated/prisma/client";
+import { findCompanyById } from "@/server/models/company";
 import { TreinamentosClient } from "./treinamentos-client";
 
 export default async function TreinamentosPage() {
@@ -26,6 +27,8 @@ export default async function TreinamentosPage() {
   }
 
   const db = tenantDb(user.companyId);
+  const company = await findCompanyById(user.companyId);
+  const companyName = company?.name ?? "Minha empresa";
 
   const [trainings, trainingTypes] = await Promise.all([
     listTrainings(db),
@@ -65,25 +68,12 @@ export default async function TreinamentosPage() {
   }));
 
   return (
-    <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-      <div className="mb-8">
-        <h1
-          className="text-2xl font-extrabold"
-          style={{ fontFamily: "var(--font-display)", color: "var(--tinta)" }}
-        >
-          Treinamentos
-        </h1>
-        <p className="text-sm mt-1" style={{ color: "var(--muted-foreground)" }}>
-          Emita e gerencie os certificados de treinamento da empresa.
-        </p>
-      </div>
-
-      <TreinamentosClient
-        initialTrainings={serializedTrainings}
-        trainingTypes={serializedTypes}
-        collaborators={collaborators}
-        isAdmin={user.role === "ADMIN"}
-      />
-    </main>
+    <TreinamentosClient
+      companyName={companyName}
+      initialTrainings={serializedTrainings}
+      trainingTypes={serializedTypes}
+      collaborators={collaborators}
+      isAdmin={user.role === "ADMIN"}
+    />
   );
 }

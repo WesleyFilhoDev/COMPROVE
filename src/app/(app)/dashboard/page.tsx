@@ -533,14 +533,6 @@ export default async function DashboardPage() {
                   transition: "box-shadow 0.15s, transform 0.1s",
                   boxShadow: "var(--shadow-xs)",
                 }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.boxShadow = "var(--shadow-lg)";
-                  e.currentTarget.style.transform = "translateY(-1px)";
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.boxShadow = "var(--shadow-xs)";
-                  e.currentTarget.style.transform = "none";
-                }}
               >
                 <div
                   style={{

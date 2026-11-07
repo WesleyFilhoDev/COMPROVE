@@ -714,21 +714,31 @@ export function ColaboradoresClient({
       {/* Page body */}
       <div style={{ padding: "28px 32px", maxWidth: 1100 }}>
         {/* Heading */}
-        <div style={{ marginBottom: 24 }}>
-          <h1
-            style={{
-              fontFamily: "var(--font-display)",
-              fontWeight: 800,
-              fontSize: 24,
-              color: "var(--tinta)",
-              margin: "0 0 4px",
-            }}
+        <div style={{ marginBottom: 24, display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 16 }}>
+          <div>
+            <h1
+              style={{
+                fontFamily: "var(--font-display)",
+                fontWeight: 800,
+                fontSize: 24,
+                color: "var(--tinta)",
+                margin: "0 0 4px",
+              }}
+            >
+              Colaboradores
+            </h1>
+            <p style={{ margin: 0, fontSize: 14, color: "var(--muted-foreground)" }}>
+              Quem registra treinamentos para a {companyName}
+            </p>
+          </div>
+          <button
+            className="cpv-btn cpv-btn--primary"
+            onClick={() => setShowModal(true)}
+            style={{ display: "flex", alignItems: "center", gap: 6, flexShrink: 0 }}
           >
-            Colaboradores
-          </h1>
-          <p style={{ margin: 0, fontSize: 14, color: "var(--muted-foreground)" }}>
-            Quem registra treinamentos para a {companyName}
-          </p>
+            <PersonPlusIcon />
+            Convidar colaborador
+          </button>
         </div>
 
         {/* wa.me banner */}

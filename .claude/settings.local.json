@@ -4,7 +4,23 @@
       "Bash(npx tsc *)",
       "Bash(git add *)",
       "Bash(git commit -m ' *)",
-      "Bash(npx shadcn *)"
+      "Bash(npx shadcn *)",
+      "mcp__claude_ai_Claude_Docs__read",
+      "mcp__claude_ai_Claude_Docs__guide",
+      "Bash(python3 *)",
+      "Bash(node *)",
+      "WebFetch(domain:claude.ai)",
+      "Read(//tmp/**)",
+      "Bash(git *)",
+      "Bash(echo \"Exit: $?\")",
+      "Bash(npm run *)",
+      "Read(//c/Users/wesle/**)",
+      "Read(//c/Users/wesle/OneDrive/**)",
+      "Bash(npx prisma *)",
+      "Bash(grep -v \"^$\")",
+      "Bash(npm install *)",
+      "Bash(xargs grep *)",
+      "Bash(npx next *)"
     ]
   }
 }

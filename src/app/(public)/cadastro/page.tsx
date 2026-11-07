@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Logo } from "@/components/logo";
 import { maskPhone } from "@/lib/format";
+import { authClient } from "@/lib/auth-client";
 
 const SEGMENTS = [
   "Construção Civil",
@@ -63,17 +64,34 @@ export default function CadastroPage() {
     setError(null);
     setPending(true);
 
-    const res = await fetch("/api/signup", {
+    // 1. Cria a conta via Better Auth client (garante que o Account é criado corretamente)
+    const signUpResult = await authClient.signUp.email({
+      name,
+      email,
+      password,
+      // @ts-expect-error extra fields passados pelo Better Auth
+      phone: phone || undefined,
+      jobTitle: jobTitle || undefined,
+    });
+
+    if (signUpResult.error) {
+      setPending(false);
+      setError(signUpResult.error.message ?? "Erro ao criar conta.");
+      return;
+    }
+
+    // 2. Cria a empresa vinculando o usuário recém-criado como ADMIN
+    const companyRes = await fetch("/api/signup/company", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name, email, password, phone, jobTitle, companyName, segment }),
+      body: JSON.stringify({ companyName, segment, phone, jobTitle }),
     });
 
     setPending(false);
 
-    if (!res.ok) {
-      const data = await res.json().catch(() => ({}));
-      setError(data?.error ?? "Erro ao criar conta. Tente novamente.");
+    if (!companyRes.ok) {
+      const data = await companyRes.json().catch(() => ({}));
+      setError(data?.error ?? "Conta criada, mas erro ao configurar empresa. Tente novamente.");
       return;
     }
 

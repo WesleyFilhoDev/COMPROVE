@@ -605,21 +605,31 @@ export function TiposClient({ companyName, initialTypes }: Props) {
       {/* Page body */}
       <div style={{ padding: "28px 32px", maxWidth: 1100 }}>
         {/* Heading */}
-        <div style={{ marginBottom: 24 }}>
-          <h1
-            style={{
-              fontFamily: "var(--font-display)",
-              fontWeight: 800,
-              fontSize: 24,
-              color: "var(--tinta)",
-              margin: "0 0 4px",
-            }}
+        <div style={{ marginBottom: 24, display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 16 }}>
+          <div>
+            <h1
+              style={{
+                fontFamily: "var(--font-display)",
+                fontWeight: 800,
+                fontSize: 24,
+                color: "var(--tinta)",
+                margin: "0 0 4px",
+              }}
+            >
+              Tipos de treinamento
+            </h1>
+            <p style={{ margin: 0, fontSize: 14, color: "var(--muted-foreground)" }}>
+              Modelos de treinamento emitidos pela {companyName}
+            </p>
+          </div>
+          <button
+            className="cpv-btn cpv-btn--primary"
+            onClick={openCreate}
+            style={{ display: "flex", alignItems: "center", gap: 6, flexShrink: 0 }}
           >
-            Tipos de treinamento
-          </h1>
-          <p style={{ margin: 0, fontSize: 14, color: "var(--muted-foreground)" }}>
-            Modelos de treinamento emitidos pela {companyName}
-          </p>
+            <PlusIcon />
+            Novo tipo
+          </button>
         </div>
 
         {/* Tabs row */}

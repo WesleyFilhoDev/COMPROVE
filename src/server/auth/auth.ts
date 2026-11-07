@@ -14,17 +14,16 @@ export const auth = betterAuth({
 
   emailAndPassword: {
     enabled: true,
-    requireEmailVerification: true,
+    requireEmailVerification: false,
     async sendVerificationEmail({ user, url }: { user: { email: string; name: string }; url: string }) {
-      if (process.env.NODE_ENV === "development") {
-        console.log(`[verify] ${user.email} → ${url}`);
-      }
-      await resend.emails.send({
+      console.log(`[verify] ${user.email} → ${url}`);
+      const { error } = await resend.emails.send({
         from: process.env.EMAIL_FROM ?? "noreply@comproved.com.br",
         to: user.email,
         subject: "Confirme seu e-mail — Comproved",
         html: `<p>Olá, ${user.name}!</p><p>Clique no link abaixo para confirmar seu e-mail e ativar sua conta:</p><p><a href="${url}">${url}</a></p><p>O link expira em 24 horas.</p>`,
       });
+      if (error) console.error("[verify] Resend error:", error);
     },
   },
 
