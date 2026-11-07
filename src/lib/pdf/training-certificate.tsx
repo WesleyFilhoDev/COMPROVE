@@ -1,3 +1,4 @@
+import path from "path";
 import {
   Document,
   Page,
@@ -8,24 +9,26 @@ import {
   StyleSheet,
 } from "@react-pdf/renderer";
 
-// ── Fontes ──────────────────────────────────────────────────────────────────
+// ── Fontes (arquivos locais em /public/fonts — sem dependência de CDN) ───────
+const fontsDir = path.join(process.cwd(), "public", "fonts");
+
 Font.register({
   family: "Manrope",
   fonts: [
-    { src: "https://fonts.gstatic.com/s/manrope/v15/xn7_YHE41ni1AdIRqAuZuw1Bx9mbZk6jFO5F.woff2", fontWeight: 400 },
-    { src: "https://fonts.gstatic.com/s/manrope/v15/xn7_YHE41ni1AdIRqAuZuw1Bx9mbZk79FO5F.woff2", fontWeight: 600 },
-    { src: "https://fonts.gstatic.com/s/manrope/v15/xn7_YHE41ni1AdIRqAuZuw1Bx9mbZk4jFO5F.woff2", fontWeight: 700 },
-    { src: "https://fonts.gstatic.com/s/manrope/v15/xn7_YHE41ni1AdIRqAuZuw1Bx9mbZk6PFO4.woff2", fontWeight: 800 },
+    { src: path.join(fontsDir, "manrope-400.woff2"), fontWeight: 400 },
+    { src: path.join(fontsDir, "manrope-600.woff2"), fontWeight: 600 },
+    { src: path.join(fontsDir, "manrope-700.woff2"), fontWeight: 700 },
+    { src: path.join(fontsDir, "manrope-800.woff2"), fontWeight: 800 },
   ],
 });
 
 Font.register({
   family: "Inter",
   fonts: [
-    { src: "https://fonts.gstatic.com/s/inter/v18/UcCO3FwrK3iLTeHuS_nVMrMxCp50SjIw2boKoduKmMEVuLyfAZ9hiJ-Ek-_EeA.woff2", fontWeight: 400 },
-    { src: "https://fonts.gstatic.com/s/inter/v18/UcCO3FwrK3iLTeHuS_nVMrMxCp50SjIw2boKoduKmMEVuI6fAZ9hiJ-Ek-_EeA.woff2", fontWeight: 500 },
-    { src: "https://fonts.gstatic.com/s/inter/v18/UcCO3FwrK3iLTeHuS_nVMrMxCp50SjIw2boKoduKmMEVuGKYAZ9hiJ-Ek-_EeA.woff2", fontWeight: 600 },
-    { src: "https://fonts.gstatic.com/s/inter/v18/UcCO3FwrK3iLTeHuS_nVMrMxCp50SjIw2boKoduKmMEVuFuYAZ9hiJ-Ek-_EeA.woff2", fontWeight: 700 },
+    { src: path.join(fontsDir, "inter-400.woff2"), fontWeight: 400 },
+    { src: path.join(fontsDir, "inter-500.woff2"), fontWeight: 500 },
+    { src: path.join(fontsDir, "inter-600.woff2"), fontWeight: 600 },
+    { src: path.join(fontsDir, "inter-700.woff2"), fontWeight: 700 },
   ],
 });
 
