@@ -137,7 +137,7 @@ function EditableField({
 
       {editing ? (
         <div>
-          <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+          <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
             <input
               type="text"
               value={value}
@@ -388,7 +388,7 @@ export function PerfilClient({ user, company }: Props) {
                   </label>
                   {cnpjEditing ? (
                     <div>
-                      <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                      <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
                         <input
                           type="text"
                           value={cnpj}
@@ -447,7 +447,7 @@ export function PerfilClient({ user, company }: Props) {
               padding: "16px 24px",
               display: "flex",
               alignItems: "center",
-              justifyContent: "space-between",
+              flexWrap: "wrap",
               gap: 16,
             }}
           >

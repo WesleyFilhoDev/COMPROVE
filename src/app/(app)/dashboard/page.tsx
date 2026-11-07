@@ -194,7 +194,7 @@ export default async function DashboardPage() {
             <span style={{ color: "var(--border)" }}>/</span>
             <span style={{ color: "var(--azul-eletrico)", fontWeight: 700 }}>Painel</span>
           </div>
-          <Link href="/treinamentos/novo" className="cpv-btn cpv-btn--primary cpv-btn--sm">
+          <Link href="/treinamentos/novo" className="cpv-btn cpv-btn--primary cpv-btn--sm cpv-hide-mobile">
             <PlusIcon />
             Novo treinamento
           </Link>
@@ -514,7 +514,7 @@ export default async function DashboardPage() {
                 Ver todos
               </Link>
             </div>
-            <div style={{ overflowX: "auto" }}>
+            <div className="cpv-table-wrap">
               <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
                 <thead>
                   <tr style={{ borderBottom: "1px solid var(--border)" }}>
@@ -1323,7 +1323,7 @@ export default async function DashboardPage() {
               Ver todos em Relatórios
             </Link>
           </div>
-          <div style={{ overflowX: "auto" }}>
+          <div className="cpv-table-wrap">
             <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
               <thead>
                 <tr style={{ borderBottom: "1px solid var(--border)" }}>

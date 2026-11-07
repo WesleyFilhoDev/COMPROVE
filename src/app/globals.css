@@ -475,6 +475,10 @@ input[type="month"] {
   padding-left: 16px;
   padding-right: 16px;
 }
+@media (max-width: 767px) {
+  /* Offset below the fixed mobile header so sticky topbar doesn't hide behind it */
+  .cpv-topbar { top: 56px; }
+}
 @media (min-width: 768px) {
   .cpv-topbar { padding-left: 32px; padding-right: 32px; }
 }

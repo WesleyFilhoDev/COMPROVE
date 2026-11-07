@@ -233,16 +233,16 @@ export function NovoTreinamentoClient({ companyName, trainingTypes, instructorId
           zIndex: 30,
         }}
       >
-        <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 13 }}>
-          <Link href="/dashboard" style={{ color: "var(--muted-foreground)", textDecoration: "none", fontWeight: 500 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 13, minWidth: 0, overflow: "hidden" }}>
+          <Link href="/dashboard" style={{ color: "var(--muted-foreground)", textDecoration: "none", fontWeight: 500, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: "14ch" }}>
             {companyName}
           </Link>
-          <span style={{ color: "var(--border)" }}>/</span>
-          <Link href="/treinamentos" style={{ color: "var(--muted-foreground)", textDecoration: "none", fontWeight: 500 }}>
+          <span style={{ color: "var(--border)", flexShrink: 0 }}>/</span>
+          <Link href="/treinamentos" style={{ color: "var(--muted-foreground)", textDecoration: "none", fontWeight: 500, flexShrink: 0 }}>
             Treinamentos
           </Link>
-          <span style={{ color: "var(--border)" }}>/</span>
-          <span style={{ color: "var(--azul-eletrico)", fontWeight: 700 }}>Novo</span>
+          <span style={{ color: "var(--border)", flexShrink: 0 }}>/</span>
+          <span style={{ color: "var(--azul-eletrico)", fontWeight: 700, flexShrink: 0 }}>Novo</span>
         </div>
         <Link
           href="/treinamentos"

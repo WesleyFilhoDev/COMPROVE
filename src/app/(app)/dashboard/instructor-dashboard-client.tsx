@@ -55,7 +55,7 @@ export function InstructorPendingSignatures({ trainings }: { trainings: PendingT
             style={{
               display: "flex",
               alignItems: "center",
-              justifyContent: "space-between",
+              flexWrap: "wrap",
               gap: 12,
               padding: "12px 16px",
               background: "var(--nevoa)",
@@ -84,7 +84,7 @@ export function InstructorPendingSignatures({ trainings }: { trainings: PendingT
               onClick={() => handleSign(t.id)}
               disabled={isLoading}
               className="cpv-btn cpv-btn--primary cpv-btn--sm"
-              style={{ flexShrink: 0, display: "flex", alignItems: "center", gap: 6, opacity: isLoading ? 0.6 : 1 }}
+              style={{ display: "flex", alignItems: "center", gap: 6, opacity: isLoading ? 0.6 : 1 }}
             >
               <PenIcon />
               {isLoading ? "Abrindo…" : "Assinar agora"}
