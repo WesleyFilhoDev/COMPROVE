@@ -45,6 +45,7 @@ export function GET(req: NextRequest, { params }: { params: Promise<{ id: string
     const data: CertificateData = {
       verificationCode: training.verificationCode,
       trainingTypeNameSnapshot: training.trainingTypeNameSnapshot,
+      declarationTextSnapshot: training.declarationTextSnapshot ?? null,
       companyNameSnapshot: training.companyNameSnapshot,
       companyCnpjSnapshot: training.companyCnpjSnapshot,
       instructorNameSnapshot: training.instructorNameSnapshot,
@@ -52,6 +53,7 @@ export function GET(req: NextRequest, { params }: { params: Promise<{ id: string
       traineeName: training.traineeName,
       traineeCpf: training.traineeCpf,
       clientCompanyName: training.clientCompanyName,
+      contentMinistrado: training.contentMinistrado ?? null,
       startsAt: training.startsAt,
       endsAt: training.endsAt,
       signatures: training.signatures.map((sig) => ({

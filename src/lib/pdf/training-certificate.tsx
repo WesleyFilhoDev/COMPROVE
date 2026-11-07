@@ -85,6 +85,19 @@ const s = StyleSheet.create({
   fieldValue: { fontSize: 10, fontWeight: 500, color: C.marinho },
   fieldValueMono: { fontFamily: "Inter", fontSize: 10, fontWeight: 500, color: C.mono },
 
+  // Declaração
+  declarationBox: {
+    marginTop: 16,
+    marginBottom: 4,
+    padding: 12,
+    borderRadius: 6,
+    backgroundColor: C.bg,
+    borderWidth: 1,
+    borderColor: C.border,
+  },
+  declarationLabel: { fontSize: 8, fontWeight: 600, color: C.muted, textTransform: "uppercase", letterSpacing: 0.8, marginBottom: 5 },
+  declarationText: { fontSize: 9, color: C.marinho, lineHeight: 1.5 },
+
   // Assinaturas
   sigSection: { marginTop: 24, marginBottom: 16 },
   sigTitle: { fontFamily: "Manrope", fontWeight: 700, fontSize: 11, color: C.marinho, marginBottom: 12 },
@@ -159,6 +172,7 @@ export type CertificateSignature = {
 export type CertificateData = {
   verificationCode: string;
   trainingTypeNameSnapshot: string;
+  declarationTextSnapshot: string | null;
   companyNameSnapshot: string;
   companyCnpjSnapshot: string;
   instructorNameSnapshot: string;
@@ -166,6 +180,7 @@ export type CertificateData = {
   traineeName: string;
   traineeCpf: string;
   clientCompanyName: string;
+  contentMinistrado: string | null;
   startsAt: Date;
   endsAt: Date;
   signatures: CertificateSignature[];
@@ -245,6 +260,26 @@ export function TrainingCertificate({ data }: { data: CertificateData }) {
             </Text>
           </View>
         </View>
+
+        {/* ── Declaração / Conteúdo ── */}
+        {(data.declarationTextSnapshot || data.contentMinistrado) && (
+          <View style={s.declarationBox}>
+            {data.declarationTextSnapshot && (
+              <>
+                <Text style={s.declarationLabel}>Declaração</Text>
+                <Text style={s.declarationText}>{data.declarationTextSnapshot}</Text>
+              </>
+            )}
+            {data.contentMinistrado && (
+              <>
+                <Text style={[s.declarationLabel, data.declarationTextSnapshot ? { marginTop: 8 } : {}]}>
+                  Conteúdo ministrado
+                </Text>
+                <Text style={s.declarationText}>{data.contentMinistrado}</Text>
+              </>
+            )}
+          </View>
+        )}
 
         {/* ── Assinaturas ── */}
         <View style={s.sigSection}>

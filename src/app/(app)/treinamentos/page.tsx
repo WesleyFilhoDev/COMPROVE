@@ -70,6 +70,7 @@ export default async function TreinamentosPage() {
   const serializedTypes = trainingTypes.map((tt) => ({
     id: tt.id,
     name: tt.name,
+    defaultDurationHours: tt.defaultDurationHours ?? null,
   }));
 
   return (

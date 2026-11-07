@@ -61,6 +61,7 @@ export async function createTraining(
     instructorNameSnapshot: string;
     instructorJobTitleSnapshot: string;
     trainingTypeNameSnapshot: string;
+    declarationTextSnapshot?: string | null;
     companyNameSnapshot: string;
     companyCnpjSnapshot: string;
     verificationCode: string;

@@ -28,7 +28,11 @@ export default async function NovoTreinamentoPage() {
 
   const trainingTypes = await listTrainingTypes(db);
 
-  const serializedTypes = trainingTypes.map((tt) => ({ id: tt.id, name: tt.name }));
+  const serializedTypes = trainingTypes.map((tt) => ({
+    id: tt.id,
+    name: tt.name,
+    defaultDurationHours: tt.defaultDurationHours ?? null,
+  }));
 
   return (
     <NovoTreinamentoClient

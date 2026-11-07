@@ -196,6 +196,7 @@ model Training {
   instructorNameSnapshot     String
   instructorJobTitleSnapshot String
   trainingTypeNameSnapshot   String
+  declarationTextSnapshot    String? // texto de declaração do tipo, capturado na emissão
   companyNameSnapshot        String
   companyCnpjSnapshot        String
 

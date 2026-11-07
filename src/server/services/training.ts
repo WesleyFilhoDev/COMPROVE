@@ -60,6 +60,7 @@ export async function emitTraining(
   // 2. Fetch and validate training type (must be active, same company)
   const trainingType = await tenantDb.trainingType.findFirst({
     where: { id: data.trainingTypeId, archivedAt: null },
+    select: { id: true, name: true, declarationText: true },
   });
   if (!trainingType) {
     throw new TrainingError(
@@ -140,6 +141,7 @@ export async function emitTraining(
     instructorNameSnapshot: instructor.name,
     instructorJobTitleSnapshot: instructor.jobTitle ?? "",
     trainingTypeNameSnapshot: trainingType.name,
+    declarationTextSnapshot: trainingType.declarationText ?? null,
     companyNameSnapshot: company.name,
     companyCnpjSnapshot: company.cnpj!,
     verificationCode,
@@ -210,12 +212,15 @@ export async function updateTraining(
   }
 
   let trainingTypeNameSnapshot = existing.trainingTypeNameSnapshot;
+  let declarationTextSnapshot = existing.declarationTextSnapshot;
   if (data.trainingTypeId && data.trainingTypeId !== existing.trainingTypeId) {
     const type = await tenantDb.trainingType.findFirst({
       where: { id: data.trainingTypeId, archivedAt: null },
+      select: { id: true, name: true, declarationText: true },
     });
     if (!type) throw new TrainingError("Tipo de treinamento não encontrado.", "INVALID_TRAINING_TYPE");
     trainingTypeNameSnapshot = type.name;
+    declarationTextSnapshot = type.declarationText ?? null;
   }
 
   const traineeName = data.traineeName ?? existing.traineeName;
@@ -239,7 +244,7 @@ export async function updateTraining(
   return tenantDb.training.update({
     where: { id },
     data: {
-      ...(data.trainingTypeId ? { trainingTypeId: data.trainingTypeId, trainingTypeNameSnapshot } : {}),
+      ...(data.trainingTypeId ? { trainingTypeId: data.trainingTypeId, trainingTypeNameSnapshot, declarationTextSnapshot } : {}),
       ...(data.instructorId ? { instructorId: data.instructorId, instructorNameSnapshot, instructorJobTitleSnapshot } : {}),
       startsAt,
       endsAt,

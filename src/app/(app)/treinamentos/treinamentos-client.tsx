@@ -31,7 +31,7 @@ type TrainingRow = {
   signatures: SignatureRow[];
 };
 
-type TrainingType = { id: string; name: string };
+type TrainingType = { id: string; name: string; defaultDurationHours: number | null };
 type Collaborator = { id: string; name: string; jobTitle: string | null };
 
 type Props = {
@@ -310,7 +310,21 @@ function NewTrainingPanel({
               ref={firstRef}
               required
               value={fields.trainingTypeId}
-              onChange={set("trainingTypeId")}
+              onChange={(e) => {
+                const id = e.target.value;
+                setFields((p) => {
+                  if (id && p.startsAt) {
+                    const type = trainingTypes.find((tt) => tt.id === id);
+                    if (type?.defaultDurationHours) {
+                      const start = new Date(p.startsAt);
+                      const end = new Date(start.getTime() + type.defaultDurationHours * 3600_000);
+                      const pad = (n: number) => String(n).padStart(2, "0");
+                      return { ...p, trainingTypeId: id, endsAt: `${end.getFullYear()}-${pad(end.getMonth() + 1)}-${pad(end.getDate())}T${pad(end.getHours())}:${pad(end.getMinutes())}` };
+                    }
+                  }
+                  return { ...p, trainingTypeId: id };
+                });
+              }}
               style={inputStyle}
             >
               <option value="">Selecione…</option>
@@ -352,7 +366,21 @@ function NewTrainingPanel({
                 type="datetime-local"
                 required
                 value={fields.startsAt}
-                onChange={set("startsAt")}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  setFields((p) => {
+                    if (val && p.trainingTypeId) {
+                      const type = trainingTypes.find((tt) => tt.id === p.trainingTypeId);
+                      if (type?.defaultDurationHours) {
+                        const start = new Date(val);
+                        const end = new Date(start.getTime() + type.defaultDurationHours * 3600_000);
+                        const pad = (n: number) => String(n).padStart(2, "0");
+                        return { ...p, startsAt: val, endsAt: `${end.getFullYear()}-${pad(end.getMonth() + 1)}-${pad(end.getDate())}T${pad(end.getHours())}:${pad(end.getMinutes())}` };
+                      }
+                    }
+                    return { ...p, startsAt: val };
+                  });
+                }}
                 style={inputStyle}
               />
             </div>

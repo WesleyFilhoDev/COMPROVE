@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { maskCpf } from "@/lib/format";
 
-type TrainingType = { id: string; name: string };
+type TrainingType = { id: string; name: string; defaultDurationHours: number | null };
 
 type ParticipantRow = { name: string; cpf: string; phone: string };
 
@@ -294,7 +294,21 @@ export function NovoTreinamentoClient({ companyName, trainingTypes, instructorId
                   ref={firstRef}
                   required
                   value={trainingTypeId}
-                  onChange={(e) => setTrainingTypeId(e.target.value)}
+                  onChange={(e) => {
+                    const id = e.target.value;
+                    setTrainingTypeId(id);
+                    if (id && startsAt) {
+                      const type = trainingTypes.find((tt) => tt.id === id);
+                      if (type?.defaultDurationHours) {
+                        const start = new Date(startsAt);
+                        const end = new Date(start.getTime() + type.defaultDurationHours * 3600_000);
+                        const pad = (n: number) => String(n).padStart(2, "0");
+                        setEndsAt(
+                          `${end.getFullYear()}-${pad(end.getMonth() + 1)}-${pad(end.getDate())}T${pad(end.getHours())}:${pad(end.getMinutes())}`
+                        );
+                      }
+                    }
+                  }}
                   style={inputStyle}
                 >
                   <option value="">Selecione o tipo…</option>
@@ -323,7 +337,21 @@ export function NovoTreinamentoClient({ companyName, trainingTypes, instructorId
                     type="datetime-local"
                     required
                     value={startsAt}
-                    onChange={(e) => setStartsAt(e.target.value)}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      setStartsAt(val);
+                      if (val && trainingTypeId) {
+                        const type = trainingTypes.find((tt) => tt.id === trainingTypeId);
+                        if (type?.defaultDurationHours) {
+                          const start = new Date(val);
+                          const end = new Date(start.getTime() + type.defaultDurationHours * 3600_000);
+                          const pad = (n: number) => String(n).padStart(2, "0");
+                          setEndsAt(
+                            `${end.getFullYear()}-${pad(end.getMonth() + 1)}-${pad(end.getDate())}T${pad(end.getHours())}:${pad(end.getMinutes())}`
+                          );
+                        }
+                      }
+                    }}
                     style={inputStyle}
                   />
                 </div>
