@@ -18,7 +18,7 @@ export default function EsqueciSenhaPage() {
 
     const result = await authClient.requestPasswordReset({
       email,
-      redirectTo: "/redefinir-senha",
+      redirectTo: `${window.location.origin}/redefinir-senha`,
     });
 
     setPending(false);
