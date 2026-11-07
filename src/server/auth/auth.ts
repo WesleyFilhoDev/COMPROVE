@@ -3,6 +3,7 @@ import { prismaAdapter } from "better-auth/adapters/prisma";
 import { emailOTP } from "better-auth/plugins";
 import { db } from "@/server/db/client";
 import { Resend } from "resend";
+import { otpEmail, resetPasswordEmail, verifyEmailTemplate } from "./email-templates";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -16,22 +17,20 @@ export const auth = betterAuth({
     enabled: true,
     requireEmailVerification: false,
     async sendVerificationEmail({ user, url }: { user: { email: string; name: string }; url: string }) {
-      console.log(`[verify] ${user.email} → ${url}`);
       const { error } = await resend.emails.send({
         from: process.env.EMAIL_FROM ?? "noreply@comproved.com.br",
         to: user.email,
         subject: "Confirme seu e-mail — Comproved",
-        html: `<p>Olá, ${user.name}!</p><p>Clique no link abaixo para confirmar seu e-mail e ativar sua conta:</p><p><a href="${url}">${url}</a></p><p>O link expira em 24 horas.</p>`,
+        html: verifyEmailTemplate(user.name, url),
       });
       if (error) console.error("[verify] Resend error:", error);
     },
     async sendResetPasswordEmail({ user, url }: { user: { email: string; name: string }; url: string }) {
-      if (process.env.NODE_ENV === "development") console.log(`[reset-password] ${user.email}`);
       const { error } = await resend.emails.send({
         from: process.env.EMAIL_FROM ?? "noreply@comproved.com.br",
         to: user.email,
         subject: "Redefinir senha — Comproved",
-        html: `<p>Olá, ${user.name}!</p><p>Recebemos uma solicitação para redefinir a senha da sua conta.</p><p>Clique no link abaixo para criar uma nova senha:</p><p><a href="${url}">${url}</a></p><p>O link expira em 1 hora. Se você não solicitou isso, ignore este e-mail.</p>`,
+        html: resetPasswordEmail(user.name, url),
       });
       if (error) console.error("[reset-password] Resend error:", error);
     },
@@ -52,11 +51,14 @@ export const auth = betterAuth({
     emailOTP({
       otpLength: 6,
       expiresIn: 600,
-      async sendVerificationOTP({ email, otp, type }) {
-        // integração com Resend adicionada no Step 3
-        if (process.env.NODE_ENV === "development") {
-          console.log(`[emailOTP] ${email} → ${otp} (${type})`);
-        }
+      async sendVerificationOTP({ email, otp }) {
+        const { error } = await resend.emails.send({
+          from: process.env.EMAIL_FROM ?? "noreply@comproved.com.br",
+          to: email,
+          subject: "Seu código de verificação — Comproved",
+          html: otpEmail(email.split("@")[0], otp),
+        });
+        if (error) console.error("[emailOTP] Resend error:", error);
       },
     }),
   ],
