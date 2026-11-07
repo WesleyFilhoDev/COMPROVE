@@ -41,6 +41,7 @@ type Props = {
   trainings: Training[];
   collaborators: Collaborator[];
   trainingTypes: TrainingType[];
+  companyName: string;
 };
 
 function getInitials(name: string): string {
@@ -89,7 +90,7 @@ function getDurationHours(startsAt: string, endsAt: string): number {
 
 const PAGE_SIZE = 10;
 
-export function RelatoriosClient({ trainings, collaborators, trainingTypes }: Props) {
+export function RelatoriosClient({ trainings, collaborators, trainingTypes, companyName }: Props) {
   const now = new Date();
   const defaultStart = new Date(now.getFullYear(), now.getMonth(), 1);
   const defaultEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999);
@@ -106,13 +107,14 @@ export function RelatoriosClient({ trainings, collaborators, trainingTypes }: Pr
   const [page, setPage] = useState(1);
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [showExportModal, setShowExportModal] = useState(false);
+  const [exportTargetIds, setExportTargetIds] = useState<string[] | null>(null);
   const [exportPending, setExportPending] = useState<"csv" | "pdf" | null>(null);
   const [exportError, setExportError] = useState<string | null>(null);
 
   async function handleExport(format: "csv" | "pdf") {
     setExportPending(format);
     setExportError(null);
-    const ids = Array.from(selected);
+    const ids = exportTargetIds ?? Array.from(selected);
     const res = await fetch("/api/trainings/export", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -131,6 +133,7 @@ export function RelatoriosClient({ trainings, collaborators, trainingTypes }: Pr
     a.click();
     URL.revokeObjectURL(url);
     setShowExportModal(false);
+    setExportTargetIds(null);
   }
 
   function setThisMonth() {
@@ -240,8 +243,38 @@ export function RelatoriosClient({ trainings, collaborators, trainingTypes }: Pr
   const startDate = new Date(dateStart + "T00:00:00");
   const monthLabel = MONTH_NAMES[startDate.getMonth()];
 
+  const filteredIds = filtered.map((t) => t.id);
+
   return (
     <>
+      {/* Heading row */}
+      <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 16, marginBottom: 20, flexWrap: "wrap" }}>
+        <div>
+          <h1 style={{ fontFamily: "var(--font-display)", fontWeight: 800, fontSize: 24, color: "var(--tinta)", margin: "0 0 4px" }}>
+            Relatórios
+          </h1>
+          <p style={{ margin: 0, color: "var(--muted-foreground)", fontSize: 14 }}>
+            Histórico completo dos treinamentos, para conferência e auditoria.
+          </p>
+        </div>
+        <button
+          className="cpv-btn cpv-btn--outline cpv-btn--sm"
+          onClick={() => {
+            if (filteredIds.length === 0) return;
+            setExportTargetIds(filteredIds);
+            setShowExportModal(true);
+          }}
+          disabled={filteredIds.length === 0 || !!exportPending}
+          style={{ display: "flex", alignItems: "center", gap: 6, flexShrink: 0 }}
+          title={filteredIds.length === 0 ? "Nenhum resultado para exportar" : `Exportar ${filteredIds.length} resultado${filteredIds.length !== 1 ? "s" : ""}`}
+        >
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+            <path d="M7 1v8M4 6l3 3 3-3M2 11h10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+          Exportar{filteredIds.length > 0 ? ` (${filteredIds.length})` : ""}
+        </button>
+      </div>
+
       {/* Filters */}
       <div
         style={{
@@ -482,7 +515,7 @@ export function RelatoriosClient({ trainings, collaborators, trainingTypes }: Pr
           </div>
           {selected.size > 0 && (
             <button
-              onClick={() => setShowExportModal(true)}
+              onClick={() => { setExportTargetIds(null); setShowExportModal(true); }}
               className="cpv-btn cpv-btn--outline cpv-btn--sm"
               style={{ fontSize: 12 }}
             >
@@ -745,7 +778,8 @@ export function RelatoriosClient({ trainings, collaborators, trainingTypes }: Pr
               Exportar treinamentos
             </h2>
             <p style={{ margin: "0 0 20px", fontSize: 13, color: "var(--muted-foreground)" }}>
-              {selected.size} treinamento{selected.size !== 1 ? "s" : ""} selecionado{selected.size !== 1 ? "s" : ""}. Escolha o formato:
+              {(exportTargetIds ?? Array.from(selected)).length} treinamento{(exportTargetIds ?? Array.from(selected)).length !== 1 ? "s" : ""}
+              {exportTargetIds ? " do filtro atual" : " selecionados"}. Escolha o formato:
             </p>
 
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 20 }}>

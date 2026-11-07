@@ -141,44 +141,12 @@ export default async function RelatoriosPage() {
 
       {/* Page content */}
       <div style={{ padding: "28px 32px", maxWidth: 1200 }}>
-        {/* Page header */}
-        <div
-          style={{
-            display: "flex",
-            alignItems: "flex-start",
-            justifyContent: "space-between",
-            gap: 16,
-            marginBottom: 24,
-            flexWrap: "wrap",
-          }}
-        >
-          <div>
-            <h1
-              style={{
-                fontFamily: "var(--font-display)",
-                fontWeight: 800,
-                fontSize: 24,
-                color: "var(--tinta)",
-                margin: 0,
-                lineHeight: 1.2,
-              }}
-            >
-              Relatórios
-            </h1>
-            <p style={{ margin: "4px 0 0", color: "var(--muted-foreground)", fontSize: 14 }}>
-              Histórico completo dos treinamentos, para conferência e auditoria.
-            </p>
-          </div>
-          <button className="cpv-btn cpv-btn--outline cpv-btn--sm" style={{ gap: 6 }}>
-            <DownloadIcon />
-            Exportar
-          </button>
-        </div>
 
         <RelatoriosClient
           trainings={serializedTrainings}
           collaborators={collaborators}
           trainingTypes={trainingTypes}
+          companyName={companyName}
         />
       </div>
     </div>
