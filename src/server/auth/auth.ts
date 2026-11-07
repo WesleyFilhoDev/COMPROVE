@@ -25,6 +25,16 @@ export const auth = betterAuth({
       });
       if (error) console.error("[verify] Resend error:", error);
     },
+    async sendResetPasswordEmail({ user, url }: { user: { email: string; name: string }; url: string }) {
+      console.log(`[reset-password] ${user.email} → ${url}`);
+      const { error } = await resend.emails.send({
+        from: process.env.EMAIL_FROM ?? "noreply@comproved.com.br",
+        to: user.email,
+        subject: "Redefinir senha — Comproved",
+        html: `<p>Olá, ${user.name}!</p><p>Recebemos uma solicitação para redefinir a senha da sua conta.</p><p>Clique no link abaixo para criar uma nova senha:</p><p><a href="${url}">${url}</a></p><p>O link expira em 1 hora. Se você não solicitou isso, ignore este e-mail.</p>`,
+      });
+      if (error) console.error("[reset-password] Resend error:", error);
+    },
   },
 
   socialProviders: {
