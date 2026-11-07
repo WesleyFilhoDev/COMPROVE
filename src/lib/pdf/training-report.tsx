@@ -8,14 +8,14 @@ import {
   StyleSheet,
 } from "@react-pdf/renderer";
 
-const fontsDir = path.join(process.cwd(), "public", "fonts");
+const fontsDir = path.join(process.cwd(), "node_modules", "@fontsource");
 
 Font.register({
   family: "Inter",
   fonts: [
-    { src: path.join(fontsDir, "inter-400.woff2"), fontWeight: 400 },
-    { src: path.join(fontsDir, "inter-600.woff2"), fontWeight: 600 },
-    { src: path.join(fontsDir, "inter-700.woff2"), fontWeight: 700 },
+    { src: path.join(fontsDir, "inter", "files", "inter-latin-400-normal.woff"), fontWeight: 400 },
+    { src: path.join(fontsDir, "inter", "files", "inter-latin-600-normal.woff"), fontWeight: 600 },
+    { src: path.join(fontsDir, "inter", "files", "inter-latin-700-normal.woff"), fontWeight: 700 },
   ],
 });
 

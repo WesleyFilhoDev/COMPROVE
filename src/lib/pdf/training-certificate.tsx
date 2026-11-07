@@ -9,26 +9,26 @@ import {
   StyleSheet,
 } from "@react-pdf/renderer";
 
-// ── Fontes (arquivos locais em /public/fonts — sem dependência de CDN) ───────
-const fontsDir = path.join(process.cwd(), "public", "fonts");
+// ── Fontes (woff via @fontsource — react-pdf não suporta woff2) ──────────────
+const fontsDir = path.join(process.cwd(), "node_modules", "@fontsource");
 
 Font.register({
   family: "Manrope",
   fonts: [
-    { src: path.join(fontsDir, "manrope-400.woff2"), fontWeight: 400 },
-    { src: path.join(fontsDir, "manrope-600.woff2"), fontWeight: 600 },
-    { src: path.join(fontsDir, "manrope-700.woff2"), fontWeight: 700 },
-    { src: path.join(fontsDir, "manrope-800.woff2"), fontWeight: 800 },
+    { src: path.join(fontsDir, "manrope", "files", "manrope-latin-400-normal.woff"), fontWeight: 400 },
+    { src: path.join(fontsDir, "manrope", "files", "manrope-latin-600-normal.woff"), fontWeight: 600 },
+    { src: path.join(fontsDir, "manrope", "files", "manrope-latin-700-normal.woff"), fontWeight: 700 },
+    { src: path.join(fontsDir, "manrope", "files", "manrope-latin-800-normal.woff"), fontWeight: 800 },
   ],
 });
 
 Font.register({
   family: "Inter",
   fonts: [
-    { src: path.join(fontsDir, "inter-400.woff2"), fontWeight: 400 },
-    { src: path.join(fontsDir, "inter-500.woff2"), fontWeight: 500 },
-    { src: path.join(fontsDir, "inter-600.woff2"), fontWeight: 600 },
-    { src: path.join(fontsDir, "inter-700.woff2"), fontWeight: 700 },
+    { src: path.join(fontsDir, "inter", "files", "inter-latin-400-normal.woff"), fontWeight: 400 },
+    { src: path.join(fontsDir, "inter", "files", "inter-latin-500-normal.woff"), fontWeight: 500 },
+    { src: path.join(fontsDir, "inter", "files", "inter-latin-600-normal.woff"), fontWeight: 600 },
+    { src: path.join(fontsDir, "inter", "files", "inter-latin-700-normal.woff"), fontWeight: 700 },
   ],
 });
 
