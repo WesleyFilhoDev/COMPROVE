@@ -23,8 +23,10 @@ export default function EsqueciSenhaPage() {
 
     setPending(false);
 
-    if (result.error) {
-      setError(result.error.message ?? "Não foi possível enviar o e-mail. Tente novamente.");
+    // Sempre mostra sucesso — nunca revelar se o e-mail está cadastrado (email enumeration)
+    if (result.error && result.error.status === 0) {
+      // Apenas erros de rede chegam aqui; erros de "usuário não encontrado" são silenciados
+      setError("Falha de conexão. Verifique sua internet e tente novamente.");
       return;
     }
 
@@ -116,7 +118,7 @@ export default function EsqueciSenhaPage() {
                   Não recebeu?{" "}
                   <button
                     type="button"
-                    onClick={() => { setSent(false); setEmail(""); }}
+                    onClick={() => setSent(false)}
                     className="font-semibold"
                     style={{ color: "var(--link)", background: "none", border: "none", cursor: "pointer", padding: 0 }}
                   >

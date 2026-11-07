@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, Suspense } from "react";
+import { useState, useEffect, useRef, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { authClient } from "@/lib/auth-client";
@@ -30,16 +30,28 @@ function RedefinirSenhaForm() {
   const [showConfirm, setShowConfirm] = useState(false);
   const [pending, setPending] = useState(false);
   const [done, setDone] = useState(false);
+  const [countdown, setCountdown] = useState(5);
   const [error, setError] = useState<string | null>(null);
+  const countdownRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const strength = passwordStrength(password);
   const mismatch = confirm.length > 0 && password !== confirm;
 
   useEffect(() => {
-    if (!token) {
-      setError("Link inválido ou expirado. Solicite um novo link de recuperação.");
+    if (done) {
+      countdownRef.current = setInterval(() => {
+        setCountdown((n) => {
+          if (n <= 1) {
+            clearInterval(countdownRef.current!);
+            router.push("/login");
+            return 0;
+          }
+          return n - 1;
+        });
+      }, 1000);
     }
-  }, [token]);
+    return () => { if (countdownRef.current) clearInterval(countdownRef.current); };
+  }, [done, router]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -68,6 +80,38 @@ function RedefinirSenhaForm() {
     setDone(true);
   }
 
+  if (!token) {
+    return (
+      <div className="w-full max-w-sm text-center">
+        <div
+          className="w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-5"
+          style={{ background: "var(--destructive-soft, #fef2f2)" }}
+        >
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
+            <circle cx="12" cy="12" r="9" stroke="var(--destructive)" strokeWidth="1.5" />
+            <path d="M12 8v4M12 16h.01" stroke="var(--destructive)" strokeWidth="1.5" strokeLinecap="round" />
+          </svg>
+        </div>
+        <h1
+          className="text-2xl font-extrabold mb-2"
+          style={{ fontFamily: "var(--font-display)", color: "var(--tinta)" }}
+        >
+          Link inválido
+        </h1>
+        <p className="text-sm mb-7" style={{ color: "var(--muted-foreground)" }}>
+          Este link de redefinição é inválido ou já expirou. Solicite um novo link para continuar.
+        </p>
+        <Link
+          href="/esqueci-senha"
+          className="cpv-btn cpv-btn--primary"
+          style={{ display: "flex", width: "100%", justifyContent: "center" }}
+        >
+          Solicitar novo link
+        </Link>
+      </div>
+    );
+  }
+
   return (
     <div className="w-full max-w-sm">
       {done ? (
@@ -89,7 +133,7 @@ function RedefinirSenhaForm() {
             Senha redefinida!
           </h1>
           <p className="text-sm mb-7" style={{ color: "var(--muted-foreground)" }}>
-            Sua nova senha foi salva com sucesso. Você já pode entrar na sua conta.
+            Sua nova senha foi salva. Redirecionando para o login em {countdown}s…
           </p>
 
           <button
@@ -98,7 +142,7 @@ function RedefinirSenhaForm() {
             className="cpv-btn cpv-btn--primary"
             style={{ width: "100%", justifyContent: "center" }}
           >
-            Ir para o login
+            Ir para o login agora
           </button>
         </div>
       ) : (
@@ -273,7 +317,7 @@ function RedefinirSenhaForm() {
 
             <button
               type="submit"
-              disabled={pending || !token}
+              disabled={pending || mismatch}
               className="cpv-btn cpv-btn--primary"
               style={{ width: "100%", justifyContent: "center" }}
             >
