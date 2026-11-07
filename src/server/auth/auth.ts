@@ -2,6 +2,9 @@ import { betterAuth } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
 import { emailOTP } from "better-auth/plugins";
 import { db } from "@/server/db/client";
+import { Resend } from "resend";
+
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 export const auth = betterAuth({
   baseURL: process.env.BETTER_AUTH_URL,
@@ -12,6 +15,17 @@ export const auth = betterAuth({
   emailAndPassword: {
     enabled: true,
     requireEmailVerification: true,
+    async sendVerificationEmail({ user, url }: { user: { email: string; name: string }; url: string }) {
+      if (process.env.NODE_ENV === "development") {
+        console.log(`[verify] ${user.email} → ${url}`);
+      }
+      await resend.emails.send({
+        from: process.env.EMAIL_FROM ?? "noreply@comproved.com.br",
+        to: user.email,
+        subject: "Confirme seu e-mail — Comproved",
+        html: `<p>Olá, ${user.name}!</p><p>Clique no link abaixo para confirmar seu e-mail e ativar sua conta:</p><p><a href="${url}">${url}</a></p><p>O link expira em 24 horas.</p>`,
+      });
+    },
   },
 
   socialProviders: {
