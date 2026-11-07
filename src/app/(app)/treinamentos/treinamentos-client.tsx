@@ -600,6 +600,145 @@ function CancelModal({
 
 // ─── Sign Link Panel ─────────────────────────────────────────────────────────
 
+// ─── Edit Training Panel ──────────────────────────────────────────────────────
+
+function EditTrainingPanel({
+  training,
+  trainingTypes,
+  collaborators,
+  onClose,
+  onSaved,
+}: {
+  training: TrainingRow;
+  trainingTypes: TrainingType[];
+  collaborators: Collaborator[];
+  onClose: () => void;
+  onSaved: (t: TrainingRow) => void;
+}) {
+  const [fields, setFields] = useState({
+    trainingTypeId: training.trainingType.id,
+    instructorId: training.instructor.id,
+    startsAt: training.startsAt.slice(0, 16),
+    endsAt: training.endsAt.slice(0, 16),
+    traineeName: training.traineeName,
+    traineeCpf: maskCpf(training.traineeCpf),
+    clientCompanyName: training.clientCompanyName,
+  });
+  const [error, setError] = useState<string | null>(null);
+  const [pending, setPending] = useState(false);
+
+  function set(key: keyof typeof fields) {
+    return (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) =>
+      setFields((p) => ({ ...p, [key]: e.target.value }));
+  }
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setError(null);
+    setPending(true);
+
+    const res = await fetch(`/api/trainings/${training.id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ ...fields, traineeCpf: fields.traineeCpf.replace(/\D/g, "") }),
+    });
+
+    setPending(false);
+
+    if (!res.ok) {
+      const json = (await res.json()) as { error: string | { formErrors?: string[]; fieldErrors?: Record<string, string[]> } };
+      let msg = "Erro ao salvar.";
+      if (typeof json.error === "string") msg = json.error;
+      else if (json.error?.fieldErrors) {
+        const first = Object.values(json.error.fieldErrors).flat()[0];
+        if (first) msg = first;
+      }
+      setError(msg);
+      return;
+    }
+
+    const json = (await res.json()) as { training: TrainingRow };
+    onSaved(json.training);
+  }
+
+  const inputStyle: React.CSSProperties = {
+    width: "100%", height: 36, padding: "0 12px",
+    border: "1px solid var(--border)", borderRadius: "var(--radius-md)",
+    background: "var(--card)", color: "var(--foreground)", fontSize: 14, outline: "none", boxSizing: "border-box",
+  };
+  const labelStyle: React.CSSProperties = { display: "block", fontSize: 13, fontWeight: 600, color: "var(--foreground)", marginBottom: 6 };
+
+  return (
+    <>
+      <div style={{ position: "fixed", inset: 0, zIndex: 40, background: "rgba(15,26,46,0.3)" }} onClick={onClose} />
+      <div style={{ position: "fixed", top: 0, right: 0, bottom: 0, zIndex: 50, width: "100%", maxWidth: 520, background: "var(--card)", borderLeft: "1px solid var(--border)", boxShadow: "-8px 0 32px rgba(15,26,46,0.12)", display: "flex", flexDirection: "column", overflowY: "auto" }}>
+        <div style={{ padding: "20px 24px 16px", borderBottom: "1px solid var(--border)", display: "flex", alignItems: "center", justifyContent: "space-between", flexShrink: 0 }}>
+          <div>
+            <h2 style={{ fontFamily: "var(--font-display)", fontWeight: 800, fontSize: 17, color: "var(--tinta)", margin: "0 0 3px" }}>Editar treinamento</h2>
+            <p style={{ margin: 0, fontSize: 12, color: "var(--muted-foreground)" }}>{training.traineeName} · {training.trainingType.name}</p>
+          </div>
+          <button onClick={onClose} style={{ background: "none", border: "none", cursor: "pointer", color: "var(--muted-foreground)", padding: 6 }}><XIcon /></button>
+        </div>
+
+        <form onSubmit={handleSubmit} style={{ padding: 24, display: "flex", flexDirection: "column", gap: 16, flex: 1 }}>
+          <div>
+            <label style={labelStyle}>Tipo de treinamento</label>
+            <select required value={fields.trainingTypeId} onChange={set("trainingTypeId")} style={inputStyle}>
+              {trainingTypes.map((tt) => <option key={tt.id} value={tt.id}>{tt.name}</option>)}
+            </select>
+          </div>
+
+          <div>
+            <label style={labelStyle}>Instrutor</label>
+            <select required value={fields.instructorId} onChange={set("instructorId")} style={inputStyle}>
+              {collaborators.map((c) => <option key={c.id} value={c.id}>{c.name}{c.jobTitle ? ` — ${c.jobTitle}` : ""}</option>)}
+            </select>
+          </div>
+
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+            <div>
+              <label style={labelStyle}>Início</label>
+              <input type="datetime-local" required value={fields.startsAt} onChange={set("startsAt")} style={inputStyle} />
+            </div>
+            <div>
+              <label style={labelStyle}>Término</label>
+              <input type="datetime-local" required value={fields.endsAt} onChange={set("endsAt")} style={inputStyle} />
+            </div>
+          </div>
+
+          <div>
+            <label style={labelStyle}>Nome do treinando</label>
+            <input type="text" required value={fields.traineeName} onChange={set("traineeName")} style={inputStyle} />
+          </div>
+
+          <div>
+            <label style={labelStyle}>CPF do treinando</label>
+            <input type="text" required maxLength={14} value={fields.traineeCpf}
+              onChange={(e) => setFields((p) => ({ ...p, traineeCpf: maskCpf(e.target.value) }))}
+              placeholder="000.000.000-00" style={inputStyle} />
+          </div>
+
+          <div>
+            <label style={labelStyle}>Empresa cliente</label>
+            <input type="text" required value={fields.clientCompanyName} onChange={set("clientCompanyName")} style={inputStyle} />
+          </div>
+
+          {error && <p style={{ margin: 0, fontSize: 13, color: "var(--destructive)" }}>{error}</p>}
+
+          <div style={{ marginTop: "auto", paddingTop: 8, display: "flex", gap: 10 }}>
+            <button type="submit" disabled={pending} className="cpv-btn cpv-btn--primary" style={{ flex: 1 }}>
+              {pending ? "Salvando…" : "Salvar alterações"}
+            </button>
+            <button type="button" onClick={onClose} style={{ flexShrink: 0, height: 40, padding: "0 14px", border: "none", borderRadius: "var(--radius-md)", background: "none", cursor: "pointer", color: "var(--muted-foreground)", fontSize: 13, fontWeight: 500 }}>
+              Cancelar
+            </button>
+          </div>
+        </form>
+      </div>
+    </>
+  );
+}
+
 function SignLinkModal({
   traineeName,
   trainingType,
@@ -709,6 +848,7 @@ export function TreinamentosClient({
   const [search, setSearch] = useState("");
   const [filterStatus, setFilterStatus] = useState<TrainingStatus | "">("");
   const [showPanel, setShowPanel] = useState(false);
+  const [editTraining, setEditTraining] = useState<TrainingRow | null>(null);
   const [signLinkTraining, setSignLinkTraining] = useState<TrainingRow | null>(null);
   const [signLinkToken, setSignLinkToken] = useState<string | null>(null);
   const [signLinkLoading, setSignLinkLoading] = useState(false);
@@ -984,6 +1124,14 @@ export function TreinamentosClient({
                         >
                           PDF
                         </a>
+                        {isAdmin && t.status === "ISSUED" && (
+                          <button
+                            onClick={() => setEditTraining(t)}
+                            style={{ background: "none", border: "none", cursor: "pointer", fontSize: 12, fontWeight: 600, color: "var(--muted-foreground)", padding: 0 }}
+                          >
+                            Editar
+                          </button>
+                        )}
                         {t.status === "ISSUED" && (() => {
                           const traineeSig = t.signatures.find((s) => s.signerRole === "TRAINEE");
                           const isSigned = traineeSig?.status === "SIGNED";
@@ -1037,6 +1185,20 @@ export function TreinamentosClient({
           collaborators={collaborators}
           onClose={() => setShowPanel(false)}
           onCreated={handleCreated}
+        />
+      )}
+
+      {/* Edit training panel */}
+      {editTraining && (
+        <EditTrainingPanel
+          training={editTraining}
+          trainingTypes={trainingTypes}
+          collaborators={collaborators}
+          onClose={() => setEditTraining(null)}
+          onSaved={(updated) => {
+            setTrainings((prev) => prev.map((t) => (t.id === updated.id ? updated : t)));
+            setEditTraining(null);
+          }}
         />
       )}
 

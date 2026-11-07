@@ -19,6 +19,20 @@ export const trainingCreateSchema = z.object({
     .max(200, "Nome da empresa cliente deve ter no máximo 200 caracteres."),
 });
 
+export const trainingUpdateSchema = z.object({
+  trainingTypeId: z.string().min(1).optional(),
+  instructorId: z.string().min(1).optional(),
+  startsAt: z.string().min(1).optional(),
+  endsAt: z.string().min(1).optional(),
+  traineeName: z.string().min(2).max(200).optional(),
+  traineeCpf: z
+    .string()
+    .transform((v) => v.replace(/\D/g, ""))
+    .pipe(z.string().length(11, "CPF deve ter 11 dígitos."))
+    .optional(),
+  clientCompanyName: z.string().min(2).max(200).optional(),
+});
+
 export const trainingCancelSchema = z.object({
   reason: z
     .string()
@@ -27,4 +41,5 @@ export const trainingCancelSchema = z.object({
 });
 
 export type TrainingCreate = z.output<typeof trainingCreateSchema>;
+export type TrainingUpdate = z.output<typeof trainingUpdateSchema>;
 export type TrainingCancel = z.output<typeof trainingCancelSchema>;

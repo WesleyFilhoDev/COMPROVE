@@ -7,7 +7,7 @@ import {
   cancelTraining as modelCancel,
   findTrainingById,
 } from "@/server/models/training";
-import type { TrainingCreate, TrainingCancel } from "@/server/validators/training";
+import type { TrainingCreate, TrainingUpdate, TrainingCancel } from "@/server/validators/training";
 import { generateVerificationCode, computeContentHash } from "@/lib/training-hash";
 
 type TrainingErrorCode =
@@ -170,6 +170,86 @@ export async function emitTraining(
   });
 
   return training;
+}
+
+type SessionUserWithCompany = { id: string; name: string; companyId: string };
+
+/** Update an existing training, recalculating content hash. */
+export async function updateTraining(
+  user: SessionUserWithCompany,
+  tenantDb: TenantDb,
+  id: string,
+  data: TrainingUpdate,
+) {
+  const existing = await findTrainingById(tenantDb, id);
+  if (!existing) throw new TrainingError("Treinamento não encontrado.", "NOT_FOUND");
+  if (existing.status === "CANCELED") {
+    throw new TrainingError("Não é possível editar um treinamento cancelado.", "ALREADY_CANCELED");
+  }
+
+  const startsAt = data.startsAt ? new Date(data.startsAt) : existing.startsAt;
+  const endsAt = data.endsAt ? new Date(data.endsAt) : existing.endsAt;
+  if (endsAt <= startsAt) {
+    throw new TrainingError("A data de término deve ser posterior à data de início.", "INVALID_DATES");
+  }
+
+  // Resolve snapshots if related records changed
+  let instructorNameSnapshot = existing.instructorNameSnapshot;
+  let instructorJobTitleSnapshot = existing.instructorJobTitleSnapshot;
+  if (data.instructorId && data.instructorId !== existing.instructorId) {
+    const instructor = await tenantDb.user.findFirst({
+      where: { id: data.instructorId, companyId: user.companyId, deactivatedAt: null },
+    });
+    if (!instructor) throw new TrainingError("Instrutor não encontrado.", "INVALID_INSTRUCTOR");
+    instructorNameSnapshot = instructor.name;
+    instructorJobTitleSnapshot = instructor.jobTitle ?? "";
+  }
+
+  let trainingTypeNameSnapshot = existing.trainingTypeNameSnapshot;
+  if (data.trainingTypeId && data.trainingTypeId !== existing.trainingTypeId) {
+    const type = await tenantDb.trainingType.findFirst({
+      where: { id: data.trainingTypeId, archivedAt: null },
+    });
+    if (!type) throw new TrainingError("Tipo de treinamento não encontrado.", "INVALID_TRAINING_TYPE");
+    trainingTypeNameSnapshot = type.name;
+  }
+
+  const traineeName = data.traineeName ?? existing.traineeName;
+  const traineeCpf = data.traineeCpf ?? existing.traineeCpf;
+  const clientCompanyName = data.clientCompanyName ?? existing.clientCompanyName;
+
+  const contentHash = computeContentHash({
+    traineeName,
+    traineeCpf,
+    clientCompanyName,
+    startsAt: startsAt.toISOString(),
+    endsAt: endsAt.toISOString(),
+    instructorNameSnapshot,
+    instructorJobTitleSnapshot,
+    trainingTypeNameSnapshot,
+    companyNameSnapshot: existing.companyNameSnapshot,
+    companyCnpjSnapshot: existing.companyCnpjSnapshot,
+    templateVersion: existing.templateVersion,
+  });
+
+  return tenantDb.training.update({
+    where: { id },
+    data: {
+      ...(data.trainingTypeId ? { trainingTypeId: data.trainingTypeId, trainingTypeNameSnapshot } : {}),
+      ...(data.instructorId ? { instructorId: data.instructorId, instructorNameSnapshot, instructorJobTitleSnapshot } : {}),
+      startsAt,
+      endsAt,
+      traineeName,
+      traineeCpf,
+      clientCompanyName,
+      contentHash,
+    },
+    include: {
+      instructor: { select: { id: true, name: true, jobTitle: true } },
+      trainingType: { select: { id: true, name: true } },
+      signatures: { select: { signerRole: true, status: true, signedAt: true } },
+    },
+  });
 }
 
 /** Cancel an existing training. */
