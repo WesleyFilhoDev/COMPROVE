@@ -45,6 +45,7 @@ model Company {
   district      String?
   city          String?
   state         String?   @db.VarChar(2)
+  nameChangedAt DateTime?
   deactivatedAt DateTime?
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
@@ -66,6 +67,7 @@ model User {
   jobTitle      String?
   role          UserRole? // null = ainda sem empresa
   companyId     String? // null = Master ou ainda sem empresa
+  nameChangedAt DateTime?
   deactivatedAt DateTime?
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt

@@ -253,7 +253,9 @@ export function Sidebar({ userName, userRole, companyName, companyInitials, user
       {/* Bottom user block */}
       <div style={{ borderTop: "1px solid var(--sidebar-border)", padding: "12px 8px" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          <span
+          <Link
+            href="/perfil"
+            title="Meu perfil"
             className="cpv-avatar"
             style={{
               width: 32,
@@ -262,10 +264,15 @@ export function Sidebar({ userName, userRole, companyName, companyInitials, user
               background: "var(--marinho)",
               border: "1px solid var(--sidebar-border)",
               flexShrink: 0,
+              textDecoration: "none",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              color: "#fff",
             }}
           >
             {userInitials}
-          </span>
+          </Link>
           <div style={{ flex: 1, overflow: "hidden" }}>
             <div
               style={{
