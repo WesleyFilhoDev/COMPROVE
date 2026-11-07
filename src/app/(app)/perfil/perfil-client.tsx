@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { authClient } from "@/lib/auth-client";
 import type { UserRole } from "@/generated/prisma/client";
 
 const COOLDOWN_DAYS = 30;
@@ -44,32 +43,6 @@ function PencilIcon() {
   return (
     <svg width="14" height="14" viewBox="0 0 15 15" fill="none" aria-hidden="true">
       <path d="M11.5 1.5a1.42 1.42 0 0 1 2 2l-9 9-2.5.5.5-2.5 9-9Z" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  );
-}
-
-function LockIcon() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-      <rect x="2" y="7" width="12" height="8" rx="2" stroke="currentColor" strokeWidth="1.5" />
-      <path d="M5 7V5a3 3 0 0 1 6 0v2" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-      <circle cx="8" cy="11" r="1.2" fill="currentColor" />
-    </svg>
-  );
-}
-
-function EyeIcon({ open }: { open: boolean }) {
-  if (open) {
-    return (
-      <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-        <path d="M2 2l12 12M6.5 6.6A2 2 0 0 0 9.4 9.5M4.2 4.3C2.9 5.2 2 6.5 2 8c0 2.5 2.7 5 6 5a7.6 7.6 0 0 0 3.8-1.1M6.5 3.1C7 3 7.5 3 8 3c3.3 0 6 2.5 6 5 0 .8-.3 1.6-.7 2.3" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
-      </svg>
-    );
-  }
-  return (
-    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-      <ellipse cx="8" cy="8" rx="6" ry="5" stroke="currentColor" strokeWidth="1.4" />
-      <circle cx="8" cy="8" r="2" stroke="currentColor" strokeWidth="1.4" />
     </svg>
   );
 }
@@ -226,137 +199,6 @@ function EditableField({
   );
 }
 
-// ─── Password section ─────────────────────────────────────────────────────────
-
-function PasswordSection() {
-  const [currentPw, setCurrentPw] = useState("");
-  const [newPw, setNewPw] = useState("");
-  const [confirmPw, setConfirmPw] = useState("");
-  const [showCurrent, setShowCurrent] = useState(false);
-  const [showNew, setShowNew] = useState(false);
-  const [pending, setPending] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState(false);
-
-  function getStrength(pwd: string): { level: 0 | 1 | 2 | 3 | 4; label: string; color: string } {
-    if (!pwd) return { level: 0, label: "", color: "" };
-    if (pwd.length < 8) return { level: 1, label: "Muito fraca", color: "var(--destructive)" };
-    const hasLetter = /[a-zA-Z]/.test(pwd);
-    const hasNumber = /[0-9]/.test(pwd);
-    const hasSpecial = /[^a-zA-Z0-9]/.test(pwd);
-    if (!hasLetter || !hasNumber) return { level: 2, label: "Fraca", color: "var(--warning, #f59e0b)" };
-    if (!hasSpecial) return { level: 3, label: "Boa", color: "var(--warning, #f59e0b)" };
-    return { level: 4, label: "Forte", color: "var(--success)" };
-  }
-
-  const strength = getStrength(newPw);
-  const passwordsMatch = !confirmPw || newPw === confirmPw;
-
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    if (newPw !== confirmPw) { setError("As senhas não coincidem."); return; }
-    if (newPw.length < 8) { setError("A nova senha precisa ter ao menos 8 caracteres."); return; }
-    setError(null);
-    setPending(true);
-
-    const result = await authClient.changePassword({
-      currentPassword: currentPw,
-      newPassword: newPw,
-      revokeOtherSessions: false,
-    });
-
-    setPending(false);
-
-    if (result.error) {
-      setError(result.error.message ?? "Erro ao alterar senha.");
-      return;
-    }
-
-    setCurrentPw(""); setNewPw(""); setConfirmPw("");
-    setSuccess(true);
-    setTimeout(() => setSuccess(false), 4000);
-  }
-
-  const inputStyle: React.CSSProperties = {
-    width: "100%",
-    height: 36,
-    padding: "0 36px 0 12px",
-    border: "1px solid var(--border)",
-    borderRadius: "var(--radius-md)",
-    fontSize: 14,
-    outline: "none",
-    background: "var(--card)",
-    color: "var(--foreground)",
-    boxSizing: "border-box",
-  };
-
-  function PwField({ id, label, value, onChange, show, onToggle }: {
-    id: string; label: string; value: string; onChange: (v: string) => void; show: boolean; onToggle: () => void;
-  }) {
-    return (
-      <div>
-        <label htmlFor={id} style={{ display: "block", fontSize: 13, fontWeight: 600, color: "var(--foreground)", marginBottom: 6 }}>
-          {label}
-        </label>
-        <div style={{ position: "relative" }}>
-          <input id={id} type={show ? "text" : "password"} value={value} onChange={(e) => onChange(e.target.value)} style={inputStyle} autoComplete="off" />
-          <button type="button" onClick={onToggle} tabIndex={-1} aria-label={show ? "Ocultar" : "Mostrar"}
-            style={{ position: "absolute", right: 8, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", color: "var(--muted-foreground)", display: "flex", alignItems: "center" }}>
-            <EyeIcon open={show} />
-          </button>
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-      <PwField id="current-pw" label="Senha atual" value={currentPw} onChange={setCurrentPw} show={showCurrent} onToggle={() => setShowCurrent(v => !v)} />
-
-      <div>
-        <PwField id="new-pw" label="Nova senha" value={newPw} onChange={setNewPw} show={showNew} onToggle={() => setShowNew(v => !v)} />
-        {newPw && (
-          <div style={{ marginTop: 8 }}>
-            <div style={{ display: "flex", gap: 4, marginBottom: 4 }}>
-              {[1, 2, 3, 4].map((i) => (
-                <div key={i} style={{ flex: 1, height: 4, borderRadius: 2, background: i <= strength.level ? strength.color : "var(--border)", transition: "background 0.2s" }} />
-              ))}
-            </div>
-            <span style={{ fontSize: 11, color: strength.color, fontWeight: 600 }}>{strength.label}</span>
-          </div>
-        )}
-      </div>
-
-      <div>
-        <label htmlFor="confirm-pw" style={{ display: "block", fontSize: 13, fontWeight: 600, color: "var(--foreground)", marginBottom: 6 }}>
-          Confirmar nova senha
-        </label>
-        <input
-          id="confirm-pw"
-          type="password"
-          value={confirmPw}
-          onChange={(e) => setConfirmPw(e.target.value)}
-          style={{ ...inputStyle, borderColor: !passwordsMatch ? "var(--destructive)" : "var(--border)", padding: "0 12px" }}
-          autoComplete="off"
-        />
-        {!passwordsMatch && <p style={{ margin: "4px 0 0", fontSize: 12, color: "var(--destructive)" }}>As senhas não coincidem</p>}
-      </div>
-
-      {error && <p style={{ margin: 0, fontSize: 13, color: "var(--destructive)" }}>{error}</p>}
-      {success && <p style={{ margin: 0, fontSize: 13, color: "var(--success)", fontWeight: 600 }}>✓ Senha alterada com sucesso.</p>}
-
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 4 }}>
-        <button type="submit" disabled={pending || !currentPw || !newPw || !confirmPw} className="cpv-btn cpv-btn--primary">
-          {pending ? "Salvando…" : "Alterar senha"}
-        </button>
-        <Link href="/esqueci-senha" style={{ fontSize: 13, color: "var(--azul-eletrico)", fontWeight: 500 }}>
-          Esqueci minha senha
-        </Link>
-      </div>
-    </form>
-  );
-}
-
 // ─── Main ─────────────────────────────────────────────────────────────────────
 
 export function PerfilClient({ user, company }: Props) {
@@ -489,9 +331,34 @@ export function PerfilClient({ user, company }: Props) {
           )}
 
           {/* Senha */}
-          <SectionCard title="Senha" icon={<LockIcon />}>
-            <PasswordSection />
-          </SectionCard>
+          <div
+            style={{
+              background: "var(--nevoa)",
+              border: "1px solid var(--border)",
+              borderRadius: "var(--radius-xl)",
+              padding: "16px 24px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              gap: 16,
+            }}
+          >
+            <div>
+              <p style={{ margin: "0 0 2px", fontSize: 14, fontWeight: 600, color: "var(--foreground)" }}>
+                Alterar senha
+              </p>
+              <p style={{ margin: 0, fontSize: 13, color: "var(--muted-foreground)" }}>
+                Para redefinir sua senha, use a opção de recuperação na tela de login.
+              </p>
+            </div>
+            <Link
+              href="/login"
+              className="cpv-btn cpv-btn--outline cpv-btn--sm"
+              style={{ flexShrink: 0, textDecoration: "none" }}
+            >
+              Ir para o login
+            </Link>
+          </div>
         </div>
       </div>
     </div>
