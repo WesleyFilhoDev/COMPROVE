@@ -66,8 +66,18 @@ export function GET(req: NextRequest, { params }: { params: Promise<{ id: string
       appUrl,
     };
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const stream = await renderToStream(React.createElement(TrainingCertificate, { data }) as any);
+    let stream: Awaited<ReturnType<typeof renderToStream>>;
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      stream = await renderToStream(React.createElement(TrainingCertificate, { data }) as any);
+    } catch (err) {
+      console.error("[PDF] renderToStream error:", err);
+      return NextResponse.json(
+        { error: "Falha ao gerar PDF.", detail: err instanceof Error ? err.message : String(err) },
+        { status: 500 },
+      );
+    }
+
     const filename = `CPV-${training.verificationCode}.pdf`;
 
     return new NextResponse(stream as unknown as ReadableStream, {
