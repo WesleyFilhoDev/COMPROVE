@@ -118,6 +118,7 @@ export function Sidebar({ userName, userRole, companyName, companyInitials, user
   const pathname = usePathname();
   const router = useRouter();
   const [dark, setDark] = useState(false);
+  const [iconKey, setIconKey] = useState(0);
 
   useEffect(() => {
     const stored = localStorage.getItem("theme");
@@ -125,11 +126,16 @@ export function Sidebar({ userName, userRole, companyName, companyInitials, user
     const isDark = stored === "dark" || (!stored && prefersDark);
     setDark(isDark);
     document.documentElement.classList.toggle("dark", isDark);
+    // Enable color transitions only after initial theme is set
+    requestAnimationFrame(() => {
+      document.documentElement.classList.add("theme-ready");
+    });
   }, []);
 
   function toggleDark() {
     const next = !dark;
     setDark(next);
+    setIconKey((k) => k + 1);
     document.documentElement.classList.toggle("dark", next);
     localStorage.setItem("theme", next ? "dark" : "light");
   }
@@ -300,7 +306,7 @@ export function Sidebar({ userName, userRole, companyName, companyInitials, user
             e.currentTarget.style.color = "var(--sidebar-foreground)";
           }}
         >
-          <span style={{ opacity: 0.75, flexShrink: 0 }}>
+          <span key={iconKey} className="theme-icon-enter" style={{ opacity: 0.75, flexShrink: 0, display: "flex" }}>
             {dark ? <SunIcon /> : <MoonIcon />}
           </span>
           {dark ? "Modo claro" : "Modo escuro"}
