@@ -13,6 +13,7 @@ type Props = {
     email: string;
     nameChangedAt: string | null;
     role: UserRole | null;
+    jobTitle: string | null;
   };
   company: {
     id: string;
@@ -213,6 +214,7 @@ function EditableField({
 
 export function PerfilClient({ user, company }: Props) {
   const [userName, setUserName] = useState(user.name);
+  const [jobTitle, setJobTitle] = useState(user.jobTitle ?? "");
   const [companyName, setCompanyName] = useState(company.name);
   const [cnpj, setCnpj] = useState(company.cnpj ? formatCnpj(company.cnpj) : "");
   const [cnpjEditing, setCnpjEditing] = useState(false);
@@ -232,6 +234,20 @@ export function PerfilClient({ user, company }: Props) {
       const data = (await res.json()) as { user: { nameChangedAt: string } };
       setUserName(name);
       setUserCooldown(daysUntilAllowed(data.user.nameChangedAt));
+      return null;
+    }
+    const data = (await res.json()) as { error: string };
+    return data.error ?? "Erro ao salvar.";
+  }
+
+  async function saveJobTitle(value: string): Promise<string | null> {
+    const res = await fetch("/api/profile", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ jobTitle: value }),
+    });
+    if (res.ok) {
+      setJobTitle(value);
       return null;
     }
     const data = (await res.json()) as { error: string };
@@ -329,6 +345,14 @@ export function PerfilClient({ user, company }: Props) {
                 onSave={saveUserName}
                 cooldownDays={userCooldown}
               />
+              {user.role === "COLLABORATOR" && (
+                <EditableField
+                  label="Cargo"
+                  value={jobTitle}
+                  onSave={saveJobTitle}
+                  cooldownDays={null}
+                />
+              )}
               <div>
                 <label style={{ display: "block", fontSize: 12, fontWeight: 600, color: "var(--muted-foreground)", letterSpacing: "0.05em", textTransform: "uppercase", marginBottom: 6 }}>
                   E-mail

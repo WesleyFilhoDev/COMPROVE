@@ -26,23 +26,38 @@ export async function PATCH(req: NextRequest) {
     companyId: string | null;
   };
 
-  const body = await req.json();
-  const parsed = z.object({ name: z.string().min(2).max(200) }).safeParse(body);
+    const body = await req.json();
+  const parsed = z
+    .object({
+      name: z.string().min(2).max(200).optional(),
+      jobTitle: z.string().min(2).max(100).optional(),
+    })
+    .refine((d) => d.name !== undefined || d.jobTitle !== undefined, { message: "Nada para atualizar." })
+    .safeParse(body);
   if (!parsed.success) {
     return NextResponse.json({ error: parsed.error.flatten() }, { status: 422 });
   }
 
-  // Check cooldown
-  const dbUser = await db.user.findUnique({ where: { id: user.id }, select: { nameChangedAt: true } });
-  if (dbUser?.nameChangedAt) {
-    const elapsed = Date.now() - dbUser.nameChangedAt.getTime();
-    if (elapsed < COOLDOWN_DAYS * 86_400_000) return cooldownError(dbUser.nameChangedAt);
+  const updateData: Record<string, unknown> = {};
+
+  if (parsed.data.name !== undefined) {
+    const dbUser = await db.user.findUnique({ where: { id: user.id }, select: { nameChangedAt: true } });
+    if (dbUser?.nameChangedAt) {
+      const elapsed = Date.now() - dbUser.nameChangedAt.getTime();
+      if (elapsed < COOLDOWN_DAYS * 86_400_000) return cooldownError(dbUser.nameChangedAt);
+    }
+    updateData.name = parsed.data.name;
+    updateData.nameChangedAt = new Date();
+  }
+
+  if (parsed.data.jobTitle !== undefined) {
+    updateData.jobTitle = parsed.data.jobTitle;
   }
 
   const updated = await db.user.update({
     where: { id: user.id },
-    data: { name: parsed.data.name, nameChangedAt: new Date() },
-    select: { id: true, name: true, nameChangedAt: true },
+    data: updateData,
+    select: { id: true, name: true, nameChangedAt: true, jobTitle: true },
   });
 
   return NextResponse.json({ user: updated });

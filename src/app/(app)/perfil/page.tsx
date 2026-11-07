@@ -21,7 +21,7 @@ export default async function PerfilPage() {
   const [dbUser, company] = await Promise.all([
     db.user.findUnique({
       where: { id: user.id },
-      select: { id: true, name: true, email: true, nameChangedAt: true },
+      select: { id: true, name: true, email: true, nameChangedAt: true, jobTitle: true },
     }),
     db.company.findUnique({
       where: { id: user.companyId },
@@ -39,6 +39,7 @@ export default async function PerfilPage() {
         email: dbUser.email,
         nameChangedAt: dbUser.nameChangedAt?.toISOString() ?? null,
         role: user.role,
+        jobTitle: dbUser.jobTitle ?? null,
       }}
       company={{
         id: company.id,
