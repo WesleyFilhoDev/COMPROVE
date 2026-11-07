@@ -600,6 +600,98 @@ function CancelModal({
 
 // ─── Sign Link Panel ─────────────────────────────────────────────────────────
 
+// ─── Row Actions Menu ─────────────────────────────────────────────────────────
+
+function RowMenu({ children }: { children: React.ReactNode }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    function handler(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    }
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [open]);
+
+  return (
+    <div ref={ref} style={{ position: "relative", display: "inline-block" }}>
+      <button
+        onClick={() => setOpen((v) => !v)}
+        style={{
+          background: "none", border: "1px solid var(--border)", cursor: "pointer",
+          borderRadius: "var(--radius-md)", padding: "4px 8px", display: "flex",
+          alignItems: "center", color: "var(--muted-foreground)",
+          transition: "background 0.1s",
+        }}
+        onMouseEnter={(e) => (e.currentTarget.style.background = "var(--nevoa)")}
+        onMouseLeave={(e) => (e.currentTarget.style.background = "none")}
+        aria-label="Ações"
+      >
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+          <circle cx="2" cy="7" r="1.2" fill="currentColor" />
+          <circle cx="7" cy="7" r="1.2" fill="currentColor" />
+          <circle cx="12" cy="7" r="1.2" fill="currentColor" />
+        </svg>
+      </button>
+
+      {open && (
+        <div
+          style={{
+            position: "absolute", right: 0, top: "calc(100% + 4px)", zIndex: 60,
+            background: "var(--card)", border: "1px solid var(--border)",
+            borderRadius: "var(--radius-lg)", boxShadow: "0 8px 24px rgba(15,26,46,0.12)",
+            minWidth: 160, padding: "4px 0", overflow: "hidden",
+          }}
+          onClick={() => setOpen(false)}
+        >
+          {children}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function MenuItem({
+  onClick, href, download, color, children,
+}: {
+  onClick?: () => void;
+  href?: string;
+  download?: boolean;
+  color?: string;
+  children: React.ReactNode;
+}) {
+  const style: React.CSSProperties = {
+    display: "flex", alignItems: "center", gap: 8,
+    padding: "8px 14px", fontSize: 13, fontWeight: 500,
+    color: color ?? "var(--foreground)", textDecoration: "none",
+    cursor: "pointer", width: "100%", border: "none", background: "none",
+    textAlign: "left",
+  };
+  const hover = (e: React.MouseEvent<HTMLElement>) =>
+    (e.currentTarget.style.background = "var(--nevoa)");
+  const leave = (e: React.MouseEvent<HTMLElement>) =>
+    (e.currentTarget.style.background = "none");
+
+  if (href) {
+    return (
+      <a href={href} download={download} style={style} onMouseEnter={hover} onMouseLeave={leave} target={download ? undefined : "_blank"} rel="noopener noreferrer">
+        {children}
+      </a>
+    );
+  }
+  return (
+    <button onClick={onClick} style={style} onMouseEnter={hover} onMouseLeave={leave}>
+      {children}
+    </button>
+  );
+}
+
+function MenuDivider() {
+  return <div style={{ height: 1, background: "var(--border)", margin: "4px 0" }} />;
+}
+
 // ─── Edit Training Panel ──────────────────────────────────────────────────────
 
 function EditTrainingPanel({
@@ -1107,68 +1199,48 @@ export function TreinamentosClient({
                     <td style={{ padding: "12px 16px" }}>
                       <StatusBadge status={t.status} />
                     </td>
-                    <td style={{ padding: "12px 16px" }}>
-                      <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                        <a
-                          href={`/verificar/${t.verificationCode}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          style={{ fontSize: 12, fontWeight: 600, color: "var(--azul-eletrico)", textDecoration: "none" }}
-                        >
-                          Ver
-                        </a>
-                        <a
-                          href={`/api/trainings/${t.id}/pdf`}
-                          download
-                          style={{ fontSize: 12, fontWeight: 600, color: "var(--muted-foreground)", textDecoration: "none" }}
-                        >
-                          PDF
-                        </a>
-                        {isAdmin && t.status === "ISSUED" && (
-                          <button
-                            onClick={() => setEditTraining(t)}
-                            style={{ background: "none", border: "none", cursor: "pointer", fontSize: 12, fontWeight: 600, color: "var(--muted-foreground)", padding: 0 }}
-                          >
-                            Editar
-                          </button>
-                        )}
+                    <td style={{ padding: "12px 16px", textAlign: "right" }}>
+                      <RowMenu>
+                        <MenuItem href={`/verificar/${t.verificationCode}`}>
+                          <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="5.5" stroke="currentColor" strokeWidth="1.4"/><circle cx="7" cy="7" r="2" stroke="currentColor" strokeWidth="1.4"/></svg>
+                          Ver comprovante
+                        </MenuItem>
+                        <MenuItem href={`/api/trainings/${t.id}/pdf`} download>
+                          <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 1v8M4 6l3 3 3-3M2 11h10" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                          Baixar PDF
+                        </MenuItem>
                         {t.status === "ISSUED" && (() => {
                           const traineeSig = t.signatures.find((s) => s.signerRole === "TRAINEE");
                           const isSigned = traineeSig?.status === "SIGNED";
                           return (
-                            <button
+                            <MenuItem
                               onClick={() => openSignLink(t)}
-                              style={{
-                                background: "none",
-                                border: "none",
-                                cursor: "pointer",
-                                fontSize: 12,
-                                fontWeight: 600,
-                                color: isSigned ? "var(--success)" : "var(--azul-eletrico)",
-                                padding: 0,
-                              }}
+                              color={isSigned ? "var(--success)" : undefined}
                             >
-                              {isSigned ? "✓ Assinado" : "Enviar link"}
-                            </button>
+                              <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 10l3-3 2 2 5-6" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                              {isSigned ? "Ver assinatura" : "Enviar link de assinatura"}
+                            </MenuItem>
                           );
                         })()}
                         {isAdmin && t.status === "ISSUED" && (
-                          <button
-                            onClick={() => { setCancelId(t.id); setCancelError(null); }}
-                            style={{
-                              background: "none",
-                              border: "none",
-                              cursor: "pointer",
-                              fontSize: 12,
-                              fontWeight: 600,
-                              color: "var(--destructive)",
-                              padding: 0,
-                            }}
-                          >
-                            Cancelar
-                          </button>
+                          <MenuItem onClick={() => setEditTraining(t)}>
+                            <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M9.5 2.5a1.2 1.2 0 0 1 1.7 1.7l-7 7-2.2.5.5-2.2 7-7Z" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                            Editar treinamento
+                          </MenuItem>
                         )}
-                      </div>
+                        {isAdmin && t.status === "ISSUED" && (
+                          <>
+                            <MenuDivider />
+                            <MenuItem
+                              onClick={() => { setCancelId(t.id); setCancelError(null); }}
+                              color="var(--destructive)"
+                            >
+                              <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="5.5" stroke="currentColor" strokeWidth="1.4"/><path d="M4.5 4.5l5 5M9.5 4.5l-5 5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/></svg>
+                              Cancelar treinamento
+                            </MenuItem>
+                          </>
+                        )}
+                      </RowMenu>
                     </td>
                   </tr>
                 ))}
