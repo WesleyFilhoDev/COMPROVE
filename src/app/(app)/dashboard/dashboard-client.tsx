@@ -23,9 +23,11 @@ type Props = {
 export function DashboardClient({ pendingInvites }: Props) {
   const [resendingId, setResendingId] = useState<string | null>(null);
   const [resent, setResent] = useState<Set<string>>(new Set());
+  const [resendError, setResendError] = useState<string | null>(null);
 
   async function handleResend(inviteId: string, phone: string) {
     setResendingId(inviteId);
+    setResendError(null);
     try {
       const res = await fetch(`/api/invitations/${inviteId}/resend`, { method: "POST" });
       if (res.ok) {
@@ -34,9 +36,12 @@ export function DashboardClient({ pendingInvites }: Props) {
         const waUrl = `https://wa.me/${phone.replace(/\D/g, "")}?text=${encodeURIComponent(`Você foi convidado para a plataforma Comproved. Acesse: ${url}`)}`;
         window.open(waUrl, "_blank");
         setResent((prev) => new Set(prev).add(inviteId));
+      } else {
+        const data = await res.json().catch(() => ({})) as { error?: string };
+        setResendError(data?.error ?? "Erro ao reenviar convite. Tente novamente.");
       }
     } catch {
-      // silent
+      setResendError("Erro de conexão ao reenviar convite.");
     } finally {
       setResendingId(null);
     }
@@ -44,6 +49,11 @@ export function DashboardClient({ pendingInvites }: Props) {
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+      {resendError && (
+        <p style={{ margin: 0, fontSize: 12, color: "var(--destructive)", padding: "6px 10px", background: "var(--destructive-soft)", borderRadius: "var(--radius-md)", border: "1px solid var(--destructive-border)" }}>
+          {resendError}
+        </p>
+      )}
       {pendingInvites.map((inv) => {
         const wasResent = resent.has(inv.id);
         const createdAt = new Date(inv.createdAt);

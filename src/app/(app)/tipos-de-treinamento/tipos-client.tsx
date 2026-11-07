@@ -207,6 +207,13 @@ function Panel({
     if (res.ok) {
       const json = (await res.json()) as { type: TrainingTypeRow };
       onSaved(json.type);
+    } else {
+      const json = await res.json().catch(() => ({})) as { error?: string | { formErrors?: string[] } };
+      const msg =
+        typeof json.error === "string"
+          ? json.error
+          : (json.error?.formErrors?.[0] ?? "Erro ao restaurar tipo de treinamento.");
+      setError(msg);
     }
   }
 

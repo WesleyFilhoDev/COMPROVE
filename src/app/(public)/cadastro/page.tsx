@@ -46,8 +46,23 @@ export default function CadastroPage() {
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
   const [done, setDone] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
 
   const passwordsMatch = !confirm || password === confirm;
+
+  function getPasswordStrength(pwd: string): { level: 0 | 1 | 2 | 3 | 4; label: string; color: string } {
+    if (!pwd) return { level: 0, label: "", color: "" };
+    if (pwd.length < 8) return { level: 1, label: "Muito fraca", color: "var(--destructive)" };
+    const hasLetter = /[a-zA-Z]/.test(pwd);
+    const hasNumber = /[0-9]/.test(pwd);
+    const hasSpecial = /[^a-zA-Z0-9]/.test(pwd);
+    if (!hasLetter || !hasNumber) return { level: 2, label: "Fraca", color: "var(--warning, #f59e0b)" };
+    if (!hasSpecial) return { level: 3, label: "Boa", color: "var(--warning, #f59e0b)" };
+    return { level: 4, label: "Forte", color: "var(--success)" };
+  }
+
+  const strength = getPasswordStrength(password);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -309,46 +324,138 @@ export default function CadastroPage() {
                     <label htmlFor="password" className="block text-sm font-medium" style={{ color: "var(--foreground)" }}>
                       Senha
                     </label>
-                    <input
-                      id="password"
-                      type="password"
-                      autoComplete="new-password"
-                      required
-                      minLength={8}
-                      placeholder="Use 8 caracteres ou mais"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      className="block w-full rounded-lg border px-3 text-sm outline-none transition"
-                      style={inputStyle}
-                      onFocus={focusOn}
-                      onBlur={focusOff}
-                    />
+                    <div style={{ position: "relative" }}>
+                      <input
+                        id="password"
+                        type={showPassword ? "text" : "password"}
+                        autoComplete="new-password"
+                        required
+                        minLength={8}
+                        placeholder="Use 8 caracteres ou mais"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        className="block w-full rounded-lg border px-3 text-sm outline-none transition"
+                        style={{ ...inputStyle, paddingRight: "2.25rem" }}
+                        onFocus={focusOn}
+                        onBlur={focusOff}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword((v) => !v)}
+                        tabIndex={-1}
+                        style={{
+                          position: "absolute",
+                          right: 8,
+                          top: "50%",
+                          transform: "translateY(-50%)",
+                          background: "none",
+                          border: "none",
+                          cursor: "pointer",
+                          padding: 2,
+                          color: "var(--muted-foreground)",
+                          display: "flex",
+                          alignItems: "center",
+                        }}
+                        aria-label={showPassword ? "Ocultar senha" : "Mostrar senha"}
+                      >
+                        {showPassword ? (
+                          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                            <path d="M2 2l12 12M6.5 6.6A2 2 0 0 0 9.4 9.5M4.2 4.3C2.9 5.2 2 6.5 2 8c0 2.5 2.7 5 6 5a7.6 7.6 0 0 0 3.8-1.1M6.5 3.1C7 3 7.5 3 8 3c3.3 0 6 2.5 6 5 0 .8-.3 1.6-.7 2.3" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
+                          </svg>
+                        ) : (
+                          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                            <ellipse cx="8" cy="8" rx="6" ry="5" stroke="currentColor" strokeWidth="1.4" />
+                            <circle cx="8" cy="8" r="2" stroke="currentColor" strokeWidth="1.4" />
+                          </svg>
+                        )}
+                      </button>
+                    </div>
+                    {/* Indicador de força */}
+                    {password.length > 0 && (
+                      <div style={{ marginTop: 6 }}>
+                        <div style={{ display: "flex", gap: 4, marginBottom: 4 }}>
+                          {[1, 2, 3, 4].map((seg) => (
+                            <div
+                              key={seg}
+                              style={{
+                                flex: 1,
+                                height: 4,
+                                borderRadius: 2,
+                                background: strength.level >= seg ? strength.color : "var(--border)",
+                                transition: "background 0.2s",
+                              }}
+                            />
+                          ))}
+                        </div>
+                        {strength.label && (
+                          <p style={{ margin: 0, fontSize: 11, color: strength.color, fontWeight: 500 }}>
+                            {strength.label}
+                          </p>
+                        )}
+                      </div>
+                    )}
+                    <p className="text-xs" style={{ color: "var(--muted-foreground)", marginTop: 4 }}>
+                      Mínimo 8 caracteres. Use letras, números e símbolos para uma senha forte.
+                    </p>
                   </div>
 
                   <div className="space-y-1.5">
                     <label htmlFor="confirm" className="block text-sm font-medium" style={{ color: "var(--foreground)" }}>
                       Confirmar senha
                     </label>
-                    <input
-                      id="confirm"
-                      type="password"
-                      autoComplete="new-password"
-                      required
-                      minLength={8}
-                      placeholder="Digite a mesma senha"
-                      value={confirm}
-                      onChange={(e) => setConfirm(e.target.value)}
-                      className="block w-full rounded-lg border px-3 text-sm outline-none transition"
-                      style={{
-                        ...inputStyle,
-                        borderColor: !passwordsMatch ? "var(--destructive)" : "var(--input)",
-                      }}
-                      onFocus={focusOn}
-                      onBlur={focusOff}
-                    />
+                    <div style={{ position: "relative" }}>
+                      <input
+                        id="confirm"
+                        type={showConfirm ? "text" : "password"}
+                        autoComplete="new-password"
+                        required
+                        minLength={8}
+                        placeholder="Digite a mesma senha"
+                        value={confirm}
+                        onChange={(e) => setConfirm(e.target.value)}
+                        className="block w-full rounded-lg border px-3 text-sm outline-none transition"
+                        style={{
+                          ...inputStyle,
+                          borderColor: !passwordsMatch ? "var(--destructive)" : "var(--input)",
+                          paddingRight: "2.25rem",
+                        }}
+                        onFocus={focusOn}
+                        onBlur={focusOff}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowConfirm((v) => !v)}
+                        tabIndex={-1}
+                        style={{
+                          position: "absolute",
+                          right: 8,
+                          top: "50%",
+                          transform: "translateY(-50%)",
+                          background: "none",
+                          border: "none",
+                          cursor: "pointer",
+                          padding: 2,
+                          color: "var(--muted-foreground)",
+                          display: "flex",
+                          alignItems: "center",
+                        }}
+                        aria-label={showConfirm ? "Ocultar senha" : "Mostrar senha"}
+                      >
+                        {showConfirm ? (
+                          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                            <path d="M2 2l12 12M6.5 6.6A2 2 0 0 0 9.4 9.5M4.2 4.3C2.9 5.2 2 6.5 2 8c0 2.5 2.7 5 6 5a7.6 7.6 0 0 0 3.8-1.1M6.5 3.1C7 3 7.5 3 8 3c3.3 0 6 2.5 6 5 0 .8-.3 1.6-.7 2.3" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
+                          </svg>
+                        ) : (
+                          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                            <ellipse cx="8" cy="8" rx="6" ry="5" stroke="currentColor" strokeWidth="1.4" />
+                            <circle cx="8" cy="8" r="2" stroke="currentColor" strokeWidth="1.4" />
+                          </svg>
+                        )}
+                      </button>
+                    </div>
                     {!passwordsMatch && (
                       <p className="text-xs" style={{ color: "var(--destructive)" }}>
-                        As duas senhas são iguais
+                        As senhas não coincidem
                       </p>
                     )}
                   </div>

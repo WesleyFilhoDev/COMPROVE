@@ -16,6 +16,7 @@ export default function LoginPage() {
   const [remember, setRemember] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -214,24 +215,57 @@ export default function LoginPage() {
                     Esqueci minha senha
                   </Link>
                 </div>
-                <input
-                  id="password"
-                  type="password"
-                  autoComplete="current-password"
-                  required
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="block w-full rounded-lg border px-3 text-sm outline-none transition"
-                  style={{
-                    height: "var(--control-md)",
-                    borderColor: "var(--input)",
-                    background: "#fff",
-                    color: "var(--foreground)",
-                    fontFamily: "var(--font-sans)",
-                  }}
-                  onFocus={(e) => (e.currentTarget.style.boxShadow = "var(--focus-halo)")}
-                  onBlur={(e) => (e.currentTarget.style.boxShadow = "none")}
-                />
+                <div style={{ position: "relative" }}>
+                  <input
+                    id="password"
+                    type={showPassword ? "text" : "password"}
+                    autoComplete="current-password"
+                    required
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className="block w-full rounded-lg border px-3 text-sm outline-none transition"
+                    style={{
+                      height: "var(--control-md)",
+                      borderColor: "var(--input)",
+                      background: "#fff",
+                      color: "var(--foreground)",
+                      fontFamily: "var(--font-sans)",
+                      paddingRight: "2.25rem",
+                    }}
+                    onFocus={(e) => (e.currentTarget.style.boxShadow = "var(--focus-halo)")}
+                    onBlur={(e) => (e.currentTarget.style.boxShadow = "none")}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword((v) => !v)}
+                    tabIndex={-1}
+                    style={{
+                      position: "absolute",
+                      right: 8,
+                      top: "50%",
+                      transform: "translateY(-50%)",
+                      background: "none",
+                      border: "none",
+                      cursor: "pointer",
+                      padding: 2,
+                      color: "var(--muted-foreground)",
+                      display: "flex",
+                      alignItems: "center",
+                    }}
+                    aria-label={showPassword ? "Ocultar senha" : "Mostrar senha"}
+                  >
+                    {showPassword ? (
+                      <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                        <path d="M2 2l12 12M6.5 6.6A2 2 0 0 0 9.4 9.5M4.2 4.3C2.9 5.2 2 6.5 2 8c0 2.5 2.7 5 6 5a7.6 7.6 0 0 0 3.8-1.1M6.5 3.1C7 3 7.5 3 8 3c3.3 0 6 2.5 6 5 0 .8-.3 1.6-.7 2.3" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
+                      </svg>
+                    ) : (
+                      <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                        <ellipse cx="8" cy="8" rx="6" ry="5" stroke="currentColor" strokeWidth="1.4" />
+                        <circle cx="8" cy="8" r="2" stroke="currentColor" strokeWidth="1.4" />
+                      </svg>
+                    )}
+                  </button>
+                </div>
               </div>
 
               <label className="flex items-center gap-2 cursor-pointer select-none">

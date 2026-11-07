@@ -595,6 +595,7 @@ export function ColaboradoresClient({
   const [showModal, setShowModal] = useState(false);
   const [invitations, setInvitations] = useState<RawInvitation[]>(initialInvitations);
   const [actionPending, setActionPending] = useState<string | null>(null);
+  const [actionError, setActionError] = useState<string | null>(null);
   const [waLink, setWaLink] = useState<string | null>(null);
   const [search, setSearch] = useState("");
 
@@ -633,19 +634,30 @@ export function ColaboradoresClient({
   });
 
   async function refreshInvitations() {
-    const listRes = await fetch("/api/invitations");
-    if (listRes.ok) {
-      const data = (await listRes.json()) as { invitations: RawInvitation[] };
-      setInvitations(data.invitations);
+    try {
+      const listRes = await fetch("/api/invitations");
+      if (listRes.ok) {
+        const data = (await listRes.json()) as { invitations: RawInvitation[] };
+        setInvitations(data.invitations);
+      } else {
+        console.error("refreshInvitations: resposta não-ok", listRes.status);
+      }
+    } catch (err) {
+      console.error("refreshInvitations: erro de rede", err);
     }
   }
 
   async function handleResend(id: string) {
     setActionPending(id + ":resend");
+    setActionError(null);
     const res = await fetch(`/api/invitations/${id}/resend`, { method: "POST" });
     setActionPending(null);
 
-    if (!res.ok) return;
+    if (!res.ok) {
+      const json = await res.json().catch(() => ({})) as { error?: string };
+      setActionError(json?.error ?? "Erro ao reenviar convite. Tente novamente.");
+      return;
+    }
 
     const json = (await res.json()) as { waLink: string };
     setWaLink(json.waLink);
@@ -655,8 +667,16 @@ export function ColaboradoresClient({
   async function handleRevoke(id: string) {
     if (!confirm("Tem certeza que deseja revogar este convite?")) return;
     setActionPending(id + ":revoke");
-    await fetch(`/api/invitations/${id}/revoke`, { method: "POST" });
+    setActionError(null);
+    const res = await fetch(`/api/invitations/${id}/revoke`, { method: "POST" });
     setActionPending(null);
+
+    if (!res.ok) {
+      const json = await res.json().catch(() => ({})) as { error?: string };
+      setActionError(json?.error ?? "Erro ao revogar convite. Tente novamente.");
+      return;
+    }
+
     await refreshInvitations();
   }
 
@@ -778,6 +798,40 @@ export function ColaboradoresClient({
                 border: "none",
                 cursor: "pointer",
                 color: "var(--success)",
+                fontSize: 13,
+                fontWeight: 600,
+                flexShrink: 0,
+                padding: 0,
+              }}
+            >
+              Fechar
+            </button>
+          </div>
+        )}
+
+        {/* Action error banner */}
+        {actionError && (
+          <div
+            style={{
+              background: "var(--destructive-soft)",
+              border: "1px solid var(--destructive-border)",
+              borderRadius: "var(--radius-lg)",
+              padding: "10px 16px",
+              marginBottom: 16,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              gap: 12,
+            }}
+          >
+            <p style={{ margin: 0, fontSize: 13, color: "var(--destructive)" }}>{actionError}</p>
+            <button
+              onClick={() => setActionError(null)}
+              style={{
+                background: "none",
+                border: "none",
+                cursor: "pointer",
+                color: "var(--destructive)",
                 fontSize: 13,
                 fontWeight: 600,
                 flexShrink: 0,
