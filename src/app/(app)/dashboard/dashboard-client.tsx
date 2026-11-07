@@ -31,10 +31,8 @@ export function DashboardClient({ pendingInvites }: Props) {
     try {
       const res = await fetch(`/api/invitations/${inviteId}/resend`, { method: "POST" });
       if (res.ok) {
-        const data = await res.json();
-        const url = data.inviteUrl as string;
-        const waUrl = `https://wa.me/${phone.replace(/\D/g, "")}?text=${encodeURIComponent(`Você foi convidado para a plataforma Comproved. Acesse: ${url}`)}`;
-        window.open(waUrl, "_blank");
+        const data = await res.json() as { waLink: string };
+        window.open(data.waLink, "_blank");
         setResent((prev) => new Set(prev).add(inviteId));
       } else {
         const data = await res.json().catch(() => ({})) as { error?: string };

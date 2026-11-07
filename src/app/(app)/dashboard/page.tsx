@@ -289,25 +289,22 @@ export default async function DashboardPage() {
             </p>
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-              <span style={{ color: "var(--muted-foreground)", fontSize: 13 }}>Período</span>
-              <select
-                style={{
-                  height: "var(--control-sm)",
-                  padding: "0 10px",
-                  borderRadius: "var(--radius-md)",
-                  border: "1px solid var(--border)",
-                  background: "var(--card)",
-                  fontSize: 13,
-                  color: "var(--foreground)",
-                  cursor: "pointer",
-                }}
-              >
-                <option>Este mês</option>
-                <option>Mês passado</option>
-                <option>Últimos 90 dias</option>
-              </select>
-            </div>
+            <span
+              style={{
+                fontSize: 12,
+                fontWeight: 600,
+                color: "var(--muted-foreground)",
+                background: "var(--nevoa)",
+                border: "1px solid var(--border)",
+                borderRadius: "var(--radius-md)",
+                padding: "0 10px",
+                height: "var(--control-sm)",
+                display: "inline-flex",
+                alignItems: "center",
+              }}
+            >
+              {monthName.charAt(0).toUpperCase() + monthName.slice(1)} {year}
+            </span>
             <Link href="/colaboradores" className="cpv-btn cpv-btn--outline cpv-btn--sm">
               Convidar colaborador
             </Link>
@@ -813,7 +810,7 @@ export default async function DashboardPage() {
                     const badgeLabel = isFullySigned
                       ? "Assinado"
                       : isCanceled
-                        ? "Expirado"
+                        ? "Cancelado"
                         : sigTotal > 0
                           ? `Pendente — ${sigSigned} de ${sigTotal}`
                           : "Pendente";

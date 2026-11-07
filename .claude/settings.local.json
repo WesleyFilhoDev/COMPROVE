@@ -20,7 +20,8 @@
       "Bash(grep -v \"^$\")",
       "Bash(npm install *)",
       "Bash(xargs grep *)",
-      "Bash(npx next *)"
+      "Bash(npx next *)",
+      "Bash(find /c/dev/comproved/src/app/api -name \"route.ts\" -exec grep -l \"withAuth\\\\|getSession\" {} \\\\;)"
     ]
   }
 }

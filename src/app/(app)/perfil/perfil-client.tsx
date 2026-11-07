@@ -432,15 +432,15 @@ export function PerfilClient({ user, company }: Props) {
                 Alterar senha
               </p>
               <p style={{ margin: 0, fontSize: 13, color: "var(--muted-foreground)" }}>
-                Para redefinir sua senha, use a opção de recuperação na tela de login.
+                Enviaremos um link de redefinição para o seu e-mail.
               </p>
             </div>
             <Link
-              href="/login"
+              href="/esqueci-senha"
               className="cpv-btn cpv-btn--outline cpv-btn--sm"
               style={{ flexShrink: 0, textDecoration: "none" }}
             >
-              Ir para o login
+              Redefinir senha
             </Link>
           </div>
         </div>

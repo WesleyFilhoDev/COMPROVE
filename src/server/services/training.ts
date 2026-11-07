@@ -255,7 +255,6 @@ export async function updateTraining(
 /** Cancel an existing training. */
 export async function cancelTraining(
   user: SessionUser,
-  _companyId: string,
   tenantDb: TenantDb,
   id: string,
   reason: TrainingCancel["reason"],

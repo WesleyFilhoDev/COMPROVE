@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { validateCpf } from "@/lib/format";
 
 export const trainingCreateSchema = z.object({
   trainingTypeId: z.string().min(1, "Tipo de treinamento é obrigatório."),
@@ -12,7 +13,10 @@ export const trainingCreateSchema = z.object({
   traineeCpf: z
     .string()
     .transform((v) => v.replace(/\D/g, ""))
-    .pipe(z.string().length(11, "CPF deve ter 11 dígitos.")),
+    .pipe(
+      z.string().length(11, "CPF deve ter 11 dígitos.")
+        .refine(validateCpf, "CPF inválido."),
+    ),
   clientCompanyName: z
     .string()
     .min(2, "Nome da empresa cliente deve ter ao menos 2 caracteres.")
@@ -28,7 +32,10 @@ export const trainingUpdateSchema = z.object({
   traineeCpf: z
     .string()
     .transform((v) => v.replace(/\D/g, ""))
-    .pipe(z.string().length(11, "CPF deve ter 11 dígitos."))
+    .pipe(
+      z.string().length(11, "CPF deve ter 11 dígitos.")
+        .refine(validateCpf, "CPF inválido."),
+    )
     .optional(),
   clientCompanyName: z.string().min(2).max(200).optional(),
 });
