@@ -286,16 +286,9 @@ export function RelatoriosClient({ trainings, collaborators, trainingTypes, comp
           boxShadow: "var(--shadow-xs)",
         }}
       >
-        <div
-          style={{
-            display: "flex",
-            flexWrap: "wrap",
-            gap: 12,
-            alignItems: "center",
-          }}
-        >
+        <div className="cpv-filters">
           {/* Date range */}
-          <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+          <div className="cpv-filter-date">
             <input
               type="date"
               value={dateStart}
@@ -310,7 +303,7 @@ export function RelatoriosClient({ trainings, collaborators, trainingTypes, comp
                 color: "var(--foreground)",
               }}
             />
-            <span style={{ color: "var(--muted-foreground)", fontSize: 13 }}>–</span>
+            <span style={{ color: "var(--muted-foreground)", fontSize: 13, flexShrink: 0 }}>–</span>
             <input
               type="date"
               value={dateEnd}
@@ -344,9 +337,7 @@ export function RelatoriosClient({ trainings, collaborators, trainingTypes, comp
           >
             <option value="all">Todos</option>
             {collaborators.map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.name}
-              </option>
+              <option key={c.id} value={c.id}>{c.name}</option>
             ))}
           </select>
 
@@ -367,9 +358,7 @@ export function RelatoriosClient({ trainings, collaborators, trainingTypes, comp
           >
             <option value="all">Todos os tipos</option>
             {trainingTypes.map((tt) => (
-              <option key={tt.id} value={tt.id}>
-                {tt.name}
-              </option>
+              <option key={tt.id} value={tt.id}>{tt.name}</option>
             ))}
           </select>
 
@@ -395,26 +384,14 @@ export function RelatoriosClient({ trainings, collaborators, trainingTypes, comp
           </select>
 
           {/* Quick buttons */}
-          <div style={{ display: "flex", gap: 6, marginLeft: "auto", flexWrap: "wrap" }}>
-            <button
-              onClick={setThisMonth}
-              className="cpv-btn cpv-btn--outline cpv-btn--sm"
-              style={{ fontSize: 12 }}
-            >
+          <div className="cpv-filter-quick">
+            <button onClick={setThisMonth} className="cpv-btn cpv-btn--outline cpv-btn--sm" style={{ fontSize: 12 }}>
               Este mês
             </button>
-            <button
-              onClick={setLastMonth}
-              className="cpv-btn cpv-btn--outline cpv-btn--sm"
-              style={{ fontSize: 12 }}
-            >
+            <button onClick={setLastMonth} className="cpv-btn cpv-btn--outline cpv-btn--sm" style={{ fontSize: 12 }}>
               Mês passado
             </button>
-            <button
-              onClick={setLast90}
-              className="cpv-btn cpv-btn--outline cpv-btn--sm"
-              style={{ fontSize: 12 }}
-            >
+            <button onClick={setLast90} className="cpv-btn cpv-btn--outline cpv-btn--sm" style={{ fontSize: 12 }}>
               Últimos 90 dias
             </button>
           </div>

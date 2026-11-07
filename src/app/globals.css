@@ -517,6 +517,27 @@ input[type="month"] {
   .cpv-hide-mobile { display: none !important; }
 }
 
+/* Filter bar — stacks vertically on mobile */
+.cpv-filters {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: stretch;
+}
+@media (min-width: 640px) {
+  .cpv-filters { flex-direction: row; flex-wrap: wrap; align-items: center; gap: 12px; }
+}
+.cpv-filters select { width: 100%; }
+@media (min-width: 640px) {
+  .cpv-filters select { width: auto; }
+}
+.cpv-filter-date { display: flex; align-items: center; gap: 6px; }
+.cpv-filter-date input[type="date"] { flex: 1; min-width: 0; }
+.cpv-filter-quick { display: flex; gap: 6px; flex-wrap: wrap; }
+@media (min-width: 640px) {
+  .cpv-filter-quick { margin-left: auto; }
+}
+
 /* ── Avatar initials ── */
 .cpv-avatar {
   display: inline-flex;
