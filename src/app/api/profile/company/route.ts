@@ -31,7 +31,20 @@ export async function PATCH(req: NextRequest) {
   }
 
   const body = await req.json();
-  const parsed = z.object({ name: z.string().min(2).max(200) }).safeParse(body);
+  const parsed = z
+    .object({
+      name: z.string().min(2).max(200).optional(),
+      cnpj: z
+        .string()
+        .transform((v) => v.replace(/\D/g, ""))
+        .pipe(z.string().length(14, "CNPJ deve ter 14 dígitos."))
+        .optional(),
+    })
+    .refine((d) => d.name !== undefined || d.cnpj !== undefined, {
+      message: "Nenhum campo fornecido.",
+    })
+    .safeParse(body);
+
   if (!parsed.success) {
     return NextResponse.json({ error: parsed.error.flatten() }, { status: 422 });
   }
@@ -41,15 +54,25 @@ export async function PATCH(req: NextRequest) {
     select: { nameChangedAt: true },
   });
 
-  if (company?.nameChangedAt) {
+  // Cooldown só se estiver alterando o nome
+  if (parsed.data.name && company?.nameChangedAt) {
     const elapsed = Date.now() - company.nameChangedAt.getTime();
     if (elapsed < COOLDOWN_DAYS * 86_400_000) return cooldownError(company.nameChangedAt);
   }
 
+  const updateData: Record<string, unknown> = {};
+  if (parsed.data.name) {
+    updateData.name = parsed.data.name;
+    updateData.nameChangedAt = new Date();
+  }
+  if (parsed.data.cnpj !== undefined) {
+    updateData.cnpj = parsed.data.cnpj;
+  }
+
   const updated = await db.company.update({
     where: { id: user.companyId },
-    data: { name: parsed.data.name, nameChangedAt: new Date() },
-    select: { id: true, name: true, nameChangedAt: true },
+    data: updateData,
+    select: { id: true, name: true, cnpj: true, nameChangedAt: true },
   });
 
   return NextResponse.json({ company: updated });

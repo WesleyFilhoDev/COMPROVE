@@ -25,7 +25,7 @@ export default async function PerfilPage() {
     }),
     db.company.findUnique({
       where: { id: user.companyId },
-      select: { id: true, name: true, nameChangedAt: true },
+      select: { id: true, name: true, cnpj: true, nameChangedAt: true },
     }),
   ]);
 
@@ -43,6 +43,7 @@ export default async function PerfilPage() {
       company={{
         id: company.id,
         name: company.name,
+        cnpj: company.cnpj ?? null,
         nameChangedAt: company.nameChangedAt?.toISOString() ?? null,
       }}
     />

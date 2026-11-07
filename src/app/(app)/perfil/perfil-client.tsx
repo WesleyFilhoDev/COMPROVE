@@ -17,11 +17,21 @@ type Props = {
   company: {
     id: string;
     name: string;
+    cnpj: string | null;
     nameChangedAt: string | null;
   };
 };
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
+
+function formatCnpj(digits: string): string {
+  const d = digits.replace(/\D/g, "").slice(0, 14);
+  if (d.length <= 2) return d;
+  if (d.length <= 5) return `${d.slice(0, 2)}.${d.slice(2)}`;
+  if (d.length <= 8) return `${d.slice(0, 2)}.${d.slice(2, 5)}.${d.slice(5)}`;
+  if (d.length <= 12) return `${d.slice(0, 2)}.${d.slice(2, 5)}.${d.slice(5, 8)}/${d.slice(8)}`;
+  return `${d.slice(0, 2)}.${d.slice(2, 5)}.${d.slice(5, 8)}/${d.slice(8, 12)}-${d.slice(12)}`;
+}
 
 function daysUntilAllowed(changedAt: string | null): number | null {
   if (!changedAt) return null;
@@ -204,6 +214,11 @@ function EditableField({
 export function PerfilClient({ user, company }: Props) {
   const [userName, setUserName] = useState(user.name);
   const [companyName, setCompanyName] = useState(company.name);
+  const [cnpj, setCnpj] = useState(company.cnpj ? formatCnpj(company.cnpj) : "");
+  const [cnpjEditing, setCnpjEditing] = useState(false);
+  const [cnpjPending, setCnpjPending] = useState(false);
+  const [cnpjError, setCnpjError] = useState<string | null>(null);
+  const [cnpjSuccess, setCnpjSuccess] = useState(false);
   const [userCooldown, setUserCooldown] = useState(() => daysUntilAllowed(user.nameChangedAt));
   const [companyCooldown, setCompanyCooldown] = useState(() => daysUntilAllowed(company.nameChangedAt));
 
@@ -221,6 +236,26 @@ export function PerfilClient({ user, company }: Props) {
     }
     const data = (await res.json()) as { error: string };
     return data.error ?? "Erro ao salvar.";
+  }
+
+  async function saveCnpj() {
+    const digits = cnpj.replace(/\D/g, "");
+    if (digits.length !== 14) { setCnpjError("CNPJ deve ter 14 dígitos."); return; }
+    setCnpjPending(true); setCnpjError(null);
+    const res = await fetch("/api/profile/company", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ cnpj: digits }),
+    });
+    setCnpjPending(false);
+    if (!res.ok) {
+      const data = (await res.json()) as { error: string };
+      setCnpjError(data.error ?? "Erro ao salvar CNPJ.");
+    } else {
+      setCnpjEditing(false);
+      setCnpjSuccess(true);
+      setTimeout(() => setCnpjSuccess(false), 3000);
+    }
   }
 
   async function saveCompanyName(name: string): Promise<string | null> {
@@ -321,6 +356,55 @@ export function PerfilClient({ user, company }: Props) {
                   onSave={saveCompanyName}
                   cooldownDays={companyCooldown}
                 />
+
+                {/* CNPJ */}
+                <div>
+                  <label style={{ display: "block", fontSize: 12, fontWeight: 600, color: "var(--muted-foreground)", letterSpacing: "0.05em", textTransform: "uppercase", marginBottom: 6 }}>
+                    CNPJ
+                  </label>
+                  {cnpjEditing ? (
+                    <div>
+                      <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                        <input
+                          type="text"
+                          value={cnpj}
+                          onChange={(e) => setCnpj(formatCnpj(e.target.value))}
+                          onKeyDown={(e) => { if (e.key === "Enter") void saveCnpj(); if (e.key === "Escape") setCnpjEditing(false); }}
+                          placeholder="00.000.000/0000-00"
+                          autoFocus
+                          maxLength={18}
+                          style={{ flex: 1, height: 36, padding: "0 12px", border: "1px solid var(--azul-eletrico)", borderRadius: "var(--radius-md)", fontSize: 14, outline: "none", background: "var(--card)", color: "var(--foreground)", fontFamily: "var(--font-mono)" }}
+                        />
+                        <button onClick={saveCnpj} disabled={cnpjPending} className="cpv-btn cpv-btn--primary cpv-btn--sm">
+                          {cnpjPending ? "Salvando…" : "Salvar"}
+                        </button>
+                        <button onClick={() => { setCnpjEditing(false); setCnpjError(null); }} style={{ background: "none", border: "none", cursor: "pointer", fontSize: 13, color: "var(--muted-foreground)", padding: "0 8px", height: 36 }}>
+                          Cancelar
+                        </button>
+                      </div>
+                      {cnpjError && <p style={{ margin: "6px 0 0", fontSize: 12, color: "var(--destructive)" }}>{cnpjError}</p>}
+                    </div>
+                  ) : (
+                    <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                      <span style={{ fontSize: 15, fontWeight: 500, color: cnpj ? "var(--foreground)" : "var(--muted-foreground)", fontFamily: cnpj ? "var(--font-mono)" : undefined }}>
+                        {cnpj || "Não informado"}
+                      </span>
+                      {cnpjSuccess && <span style={{ fontSize: 12, color: "var(--success)", fontWeight: 600 }}>✓ Salvo</span>}
+                      {!cnpj && (
+                        <span style={{ fontSize: 12, color: "var(--warning)", fontWeight: 600, background: "var(--warning-soft)", padding: "2px 8px", borderRadius: "var(--radius-full)", border: "1px solid var(--warning-border)" }}>
+                          Necessário para emitir treinamentos
+                        </span>
+                      )}
+                      <button
+                        onClick={() => setCnpjEditing(true)}
+                        style={{ background: "none", border: "none", cursor: "pointer", color: "var(--muted-foreground)", display: "flex", alignItems: "center", gap: 4, fontSize: 12, fontWeight: 500, padding: "2px 6px", borderRadius: "var(--radius-sm)" }}
+                      >
+                        <PencilIcon /> Editar
+                      </button>
+                    </div>
+                  )}
+                </div>
+
                 {companyCooldown !== null && (
                   <p style={{ margin: 0, fontSize: 12, color: "var(--muted-foreground)", background: "var(--nevoa)", padding: "8px 12px", borderRadius: "var(--radius-md)", border: "1px solid var(--border)" }}>
                     Próxima alteração do nome da empresa disponível em <strong>{companyCooldown} dia{companyCooldown !== 1 ? "s" : ""}</strong>.
