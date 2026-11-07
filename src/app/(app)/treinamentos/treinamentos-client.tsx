@@ -1118,16 +1118,27 @@ export function TreinamentosClient({
             {companyName}
           </Link>
           <span style={{ color: "var(--border)" }}>/</span>
-          <span style={{ color: "var(--azul-eletrico)", fontWeight: 700 }}>Treinamentos</span>
+          <span style={{ color: "var(--azul-eletrico)", fontWeight: 700 }}>{isAdmin ? "Treinamentos" : "Meus treinamentos"}</span>
         </div>
-        <button
-          className="cpv-btn cpv-btn--primary cpv-btn--sm"
-          onClick={() => setShowPanel(true)}
-          style={{ display: "flex", alignItems: "center", gap: 6 }}
-        >
-          <PlusIcon />
-          Novo treinamento
-        </button>
+        {isAdmin ? (
+          <button
+            className="cpv-btn cpv-btn--primary cpv-btn--sm"
+            onClick={() => setShowPanel(true)}
+            style={{ display: "flex", alignItems: "center", gap: 6 }}
+          >
+            <PlusIcon />
+            Novo treinamento
+          </button>
+        ) : (
+          <Link
+            href="/treinamentos/novo"
+            className="cpv-btn cpv-btn--primary cpv-btn--sm"
+            style={{ display: "flex", alignItems: "center", gap: 6 }}
+          >
+            <PlusIcon />
+            Novo treinamento
+          </Link>
+        )}
       </div>
 
       {/* Page body */}
@@ -1136,20 +1147,31 @@ export function TreinamentosClient({
         <div style={{ marginBottom: 24, display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 16 }}>
           <div>
           <h1 style={{ fontFamily: "var(--font-display)", fontWeight: 800, fontSize: 24, color: "var(--tinta)", margin: "0 0 4px" }}>
-            Treinamentos
+            {isAdmin ? "Treinamentos" : "Meus treinamentos"}
           </h1>
           <p style={{ margin: 0, fontSize: 14, color: "var(--muted-foreground)" }}>
-            Emita e gerencie os comprovantes de treinamento.
+            {isAdmin ? "Emita e gerencie os comprovantes de treinamento." : "Registre e acompanhe seus comprovantes."}
           </p>
           </div>
-          <button
-            className="cpv-btn cpv-btn--primary cpv-hide-mobile"
-            onClick={() => setShowPanel(true)}
-            style={{ display: "flex", alignItems: "center", gap: 6, flexShrink: 0 }}
-          >
-            <PlusIcon />
-            Novo treinamento
-          </button>
+          {isAdmin ? (
+            <button
+              className="cpv-btn cpv-btn--primary cpv-hide-mobile"
+              onClick={() => setShowPanel(true)}
+              style={{ display: "flex", alignItems: "center", gap: 6, flexShrink: 0 }}
+            >
+              <PlusIcon />
+              Novo treinamento
+            </button>
+          ) : (
+            <Link
+              href="/treinamentos/novo"
+              className="cpv-btn cpv-btn--primary cpv-hide-mobile"
+              style={{ display: "flex", alignItems: "center", gap: 6, flexShrink: 0 }}
+            >
+              <PlusIcon />
+              Novo treinamento
+            </Link>
+          )}
         </div>
 
         {/* Filters */}
@@ -1169,7 +1191,7 @@ export function TreinamentosClient({
             </span>
             <input
               type="text"
-              placeholder="Buscar por nome, tipo, instrutor"
+              placeholder={isAdmin ? "Buscar por nome, tipo, instrutor" : "Buscar por nome ou tipo"}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               style={{
@@ -1220,6 +1242,7 @@ export function TreinamentosClient({
               {trainings.length === 0 ? (
                 <div>
                   <p style={{ margin: "0 0 16px" }}>Nenhum treinamento emitido ainda.</p>
+                  {isAdmin ? (
                   <button
                     className="cpv-btn cpv-btn--primary cpv-btn--sm"
                     onClick={() => setShowPanel(true)}
@@ -1228,6 +1251,16 @@ export function TreinamentosClient({
                     <PlusIcon />
                     Emitir primeiro treinamento
                   </button>
+                  ) : (
+                    <Link
+                      href="/treinamentos/novo"
+                      className="cpv-btn cpv-btn--primary cpv-btn--sm"
+                      style={{ display: "inline-flex", alignItems: "center", gap: 6 }}
+                    >
+                      <PlusIcon />
+                      Emitir primeiro treinamento
+                    </Link>
+                  )}
                 </div>
               ) : (
                 "Nenhum treinamento encontrado com esses filtros."
@@ -1238,7 +1271,7 @@ export function TreinamentosClient({
             <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
               <thead>
                 <tr style={{ borderBottom: "1px solid var(--border)", background: "var(--nevoa)" }}>
-                  {["TREINANDO", "TIPO", "INSTRUTOR", "PERÍODO", "STATUS", ""].map((col, i) => (
+                  {(isAdmin ? ["TREINANDO", "TIPO", "INSTRUTOR", "PERÍODO", "STATUS", ""] : ["TREINANDO", "TIPO", "PERÍODO", "STATUS", ""]).map((col, i, arr) => (
                     <th
                       key={i}
                       style={{
@@ -1250,7 +1283,7 @@ export function TreinamentosClient({
                         letterSpacing: "0.06em",
                         textTransform: "uppercase",
                         whiteSpace: "nowrap",
-                        ...(i === 5 ? { width: 120 } : {}),
+                        ...(i === arr.length - 1 ? { width: 120 } : {}),
                       }}
                     >
                       {col}
@@ -1276,9 +1309,11 @@ export function TreinamentosClient({
                     <td style={{ padding: "12px 16px", color: "var(--muted-foreground)" }}>
                       {t.trainingType.name}
                     </td>
-                    <td style={{ padding: "12px 16px", color: "var(--muted-foreground)" }}>
-                      {t.instructor.name}
-                    </td>
+                    {isAdmin && (
+                      <td style={{ padding: "12px 16px", color: "var(--muted-foreground)" }}>
+                        {t.instructor.name}
+                      </td>
+                    )}
                     <td style={{ padding: "12px 16px", color: "var(--muted-foreground)", whiteSpace: "nowrap" }}>
                       <span style={{ fontFamily: "var(--font-mono)", fontSize: 12 }}>
                         {formatDateRange(t.startsAt, t.endsAt)}
@@ -1289,6 +1324,10 @@ export function TreinamentosClient({
                     </td>
                     <td style={{ padding: "12px 16px", textAlign: "right" }}>
                       <RowMenu>
+                        <MenuItem href={`/treinamentos/${t.id}`}>
+                          <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="1.5" y="1.5" width="11" height="11" rx="1.5" stroke="currentColor" strokeWidth="1.4"/><path d="M4 5h6M4 7.5h4" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/></svg>
+                          Ver detalhes
+                        </MenuItem>
                         <MenuItem href={`/verificar/${t.verificationCode}`}>
                           <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="5.5" stroke="currentColor" strokeWidth="1.4"/><circle cx="7" cy="7" r="2" stroke="currentColor" strokeWidth="1.4"/></svg>
                           Ver comprovante

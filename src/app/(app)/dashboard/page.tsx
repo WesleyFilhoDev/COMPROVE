@@ -8,6 +8,7 @@ import { tenantDb } from "@/server/db/tenant";
 import { findCompanyById } from "@/server/models/company";
 import type { UserRole } from "@/generated/prisma/client";
 import { DashboardClient } from "./dashboard-client";
+import { InstructorPendingSignatures } from "./instructor-dashboard-client";
 
 function getInitials(name: string): string {
   const parts = name.trim().split(/\s+/);
@@ -89,6 +90,581 @@ export default async function DashboardPage() {
 
   const thisMonthStart = new Date(year, month, 1);
   const thisMonthEnd = new Date(year, month + 1, 0, 23, 59, 59, 999);
+
+  // ---- INSTRUCTOR DASHBOARD ----
+  if (user.role === "COLLABORATOR") {
+    const [myTrainingsThisMonth, myAwaitingSignature, myLastTraining, myRecentTrainings] = await Promise.all([
+      db.training.findMany({
+        where: {
+          companyId: user.companyId,
+          instructorId: user.id,
+          startsAt: { gte: thisMonthStart, lte: thisMonthEnd },
+          status: "ISSUED",
+        },
+        select: { startsAt: true, endsAt: true },
+      }),
+      db.training.findMany({
+        where: {
+          companyId: user.companyId,
+          instructorId: user.id,
+          status: "ISSUED",
+          signatures: { some: { signerRole: "INSTRUCTOR", status: "PENDING" } },
+        },
+        orderBy: { startsAt: "desc" },
+        take: 10,
+      }),
+      db.training.findFirst({
+        where: { companyId: user.companyId, instructorId: user.id },
+        orderBy: { startsAt: "desc" },
+      }),
+      db.training.findMany({
+        where: { companyId: user.companyId, instructorId: user.id },
+        include: {
+          trainingType: { select: { name: true } },
+          signatures: { select: { signerRole: true, status: true } },
+        },
+        orderBy: { startsAt: "desc" },
+        take: 10,
+      }),
+    ]);
+
+    const totalHours = myTrainingsThisMonth.reduce((sum, t) => {
+      return sum + (t.endsAt.getTime() - t.startsAt.getTime()) / (1000 * 60 * 60);
+    }, 0);
+    const hoursLabel = Number.isInteger(totalHours) ? String(totalHours) : totalHours.toFixed(1);
+
+    const pendingCount = myAwaitingSignature.length;
+
+    const lastTrainingDate = myLastTraining
+      ? new Date(myLastTraining.startsAt).toLocaleDateString("pt-BR", {
+          day: "2-digit",
+          month: "2-digit",
+          year: "numeric",
+        })
+      : null;
+    const lastTrainingTime = myLastTraining
+      ? new Date(myLastTraining.startsAt).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })
+      : null;
+
+    const serializedPending = myAwaitingSignature.map((t) => ({
+      id: t.id,
+      verificationCode: t.verificationCode,
+      trainingTypeName: t.trainingTypeNameSnapshot,
+      clientCompanyName: t.clientCompanyName,
+      traineeName: t.traineeName,
+      startsAt: t.startsAt.toISOString(),
+    }));
+
+    const serializedRecent = myRecentTrainings.map((t) => ({
+      id: t.id,
+      verificationCode: t.verificationCode,
+      status: t.status,
+      trainingTypeName: t.trainingType.name,
+      clientCompanyName: t.clientCompanyName,
+      traineeName: t.traineeName,
+      startsAt: t.startsAt.toISOString(),
+      endsAt: t.endsAt.toISOString(),
+      signatures: t.signatures.map((s) => ({ signerRole: s.signerRole, status: s.status })),
+    }));
+
+    return (
+      <div>
+        {/* Top bar */}
+        <div
+          className="cpv-topbar"
+          style={{
+            background: "var(--card)",
+            borderBottom: "1px solid var(--border)",
+            height: 56,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            position: "sticky",
+            top: 0,
+            zIndex: 30,
+          }}
+        >
+          <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 13 }}>
+            <Link
+              href="/dashboard"
+              style={{ color: "var(--muted-foreground)", textDecoration: "none", fontWeight: 500 }}
+            >
+              {companyName}
+            </Link>
+            <span style={{ color: "var(--border)" }}>/</span>
+            <span style={{ color: "var(--azul-eletrico)", fontWeight: 700 }}>Painel</span>
+          </div>
+          <Link href="/treinamentos/novo" className="cpv-btn cpv-btn--primary cpv-btn--sm">
+            <PlusIcon />
+            Novo treinamento
+          </Link>
+        </div>
+
+        {/* Page content */}
+        <div className="cpv-page" style={{ maxWidth: 1000 }}>
+          {/* Greeting */}
+          <div style={{ marginBottom: 24 }}>
+            <h1
+              style={{
+                fontFamily: "var(--font-display)",
+                fontWeight: 800,
+                fontSize: 24,
+                color: "var(--tinta)",
+                margin: 0,
+                lineHeight: 1.2,
+              }}
+            >
+              Olá, {getFirstName(user.name ?? "Usuário")} 👋
+            </h1>
+            <p style={{ margin: "4px 0 0", color: "var(--muted-foreground)", fontSize: 14 }}>
+              Área do instrutor · {monthName} de {year}.
+            </p>
+          </div>
+
+          {/* CTA banner */}
+          <Link
+            href="/treinamentos/novo"
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              gap: 12,
+              padding: "16px 20px",
+              background: "var(--azul-eletrico)",
+              borderRadius: "var(--radius-xl)",
+              textDecoration: "none",
+              marginBottom: 24,
+              boxShadow: "0 2px 8px rgba(0,102,255,0.18)",
+            }}
+          >
+            <div>
+              <div
+                style={{
+                  fontSize: 15,
+                  fontWeight: 700,
+                  color: "#fff",
+                  fontFamily: "var(--font-display)",
+                }}
+              >
+                Terminou um treinamento?
+              </div>
+              <div style={{ fontSize: 13, color: "rgba(255,255,255,0.8)", marginTop: 2 }}>
+                Registre agora e gere o comprovante
+              </div>
+            </div>
+            <svg width="20" height="20" viewBox="0 0 16 16" fill="none" aria-hidden="true" style={{ color: "#fff", flexShrink: 0 }}>
+              <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </Link>
+
+          {/* Stat cards */}
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
+              gap: 16,
+              marginBottom: 28,
+            }}
+          >
+            {/* Card 1: Meus treinamentos este mês */}
+            <div
+              style={{
+                background: "var(--card)",
+                borderRadius: "var(--radius-xl)",
+                border: "1px solid var(--border)",
+                padding: "20px 24px",
+                boxShadow: "var(--shadow-xs)",
+              }}
+            >
+              <div
+                style={{
+                  color: "var(--muted-foreground)",
+                  fontSize: 12,
+                  fontWeight: 600,
+                  textTransform: "uppercase",
+                  letterSpacing: "0.06em",
+                  marginBottom: 8,
+                }}
+              >
+                Treinamentos em {monthName}
+              </div>
+              <div
+                style={{
+                  fontSize: 32,
+                  fontWeight: 800,
+                  fontFamily: "var(--font-display)",
+                  color: "var(--tinta)",
+                  lineHeight: 1.1,
+                }}
+              >
+                {myTrainingsThisMonth.length}
+              </div>
+              <div style={{ marginTop: 6, fontSize: 12, color: "var(--muted-foreground)" }}>
+                {hoursLabel} h ministradas
+              </div>
+            </div>
+
+            {/* Card 2: Aguardando assinatura */}
+            <div
+              style={{
+                background: "var(--card)",
+                borderRadius: "var(--radius-xl)",
+                border: "1px solid var(--border)",
+                padding: "20px 24px",
+                boxShadow: "var(--shadow-xs)",
+              }}
+            >
+              <div
+                style={{
+                  color: "var(--muted-foreground)",
+                  fontSize: 12,
+                  fontWeight: 600,
+                  textTransform: "uppercase",
+                  letterSpacing: "0.06em",
+                  marginBottom: 8,
+                }}
+              >
+                Aguardando assinatura
+              </div>
+              <div
+                style={{
+                  fontSize: 32,
+                  fontWeight: 800,
+                  fontFamily: "var(--font-display)",
+                  color: "var(--tinta)",
+                  lineHeight: 1.1,
+                }}
+              >
+                {pendingCount}
+              </div>
+              <div style={{ marginTop: 6 }}>
+                {pendingCount > 0 ? (
+                  <span
+                    style={{
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: 4,
+                      fontSize: 11,
+                      fontWeight: 600,
+                      color: "var(--warning)",
+                      background: "var(--warning-soft)",
+                      border: "1px solid var(--warning-border)",
+                      borderRadius: "var(--radius-full)",
+                      padding: "2px 8px",
+                    }}
+                  >
+                    Pendente
+                  </span>
+                ) : (
+                  <span
+                    style={{
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: 4,
+                      fontSize: 11,
+                      fontWeight: 600,
+                      color: "var(--success)",
+                      background: "var(--success-soft)",
+                      border: "1px solid var(--success-border)",
+                      borderRadius: "var(--radius-full)",
+                      padding: "2px 8px",
+                    }}
+                  >
+                    Em dia
+                  </span>
+                )}
+              </div>
+            </div>
+
+            {/* Card 3: Último treinamento */}
+            <div
+              style={{
+                background: "var(--card)",
+                borderRadius: "var(--radius-xl)",
+                border: "1px solid var(--border)",
+                padding: "20px 24px",
+                boxShadow: "var(--shadow-xs)",
+              }}
+            >
+              <div
+                style={{
+                  color: "var(--muted-foreground)",
+                  fontSize: 12,
+                  fontWeight: 600,
+                  textTransform: "uppercase",
+                  letterSpacing: "0.06em",
+                  marginBottom: 8,
+                }}
+              >
+                Último treinamento
+              </div>
+              {myLastTraining ? (
+                <>
+                  <div
+                    style={{
+                      fontSize: 20,
+                      fontWeight: 800,
+                      fontFamily: "var(--font-mono)",
+                      color: "var(--tinta)",
+                      lineHeight: 1.1,
+                    }}
+                  >
+                    {lastTrainingDate}
+                  </div>
+                  <div style={{ marginTop: 6, fontSize: 12, color: "var(--muted-foreground)" }}>
+                    {lastTrainingTime} · {myLastTraining.trainingTypeNameSnapshot}
+                  </div>
+                </>
+              ) : (
+                <div style={{ fontSize: 14, color: "var(--muted-foreground)", marginTop: 4 }}>
+                  Nenhum ainda
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Pending signatures section */}
+          {serializedPending.length > 0 && (
+            <div
+              style={{
+                background: "var(--card)",
+                borderRadius: "var(--radius-xl)",
+                border: "1px solid var(--border)",
+                padding: "20px 24px",
+                boxShadow: "var(--shadow-xs)",
+                marginBottom: 28,
+              }}
+            >
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  marginBottom: 16,
+                }}
+              >
+                <h2
+                  style={{
+                    fontFamily: "var(--font-display)",
+                    fontWeight: 700,
+                    fontSize: 15,
+                    color: "var(--tinta)",
+                    margin: 0,
+                  }}
+                >
+                  Pendências de assinatura
+                </h2>
+                <span
+                  style={{
+                    fontSize: 11,
+                    fontWeight: 700,
+                    color: "var(--warning)",
+                    background: "var(--warning-soft)",
+                    border: "1px solid var(--warning-border)",
+                    borderRadius: "var(--radius-full)",
+                    padding: "2px 10px",
+                  }}
+                >
+                  {serializedPending.length} pendente{serializedPending.length !== 1 ? "s" : ""}
+                </span>
+              </div>
+              <InstructorPendingSignatures trainings={serializedPending} />
+            </div>
+          )}
+
+          {/* Recent history table */}
+          <div
+            style={{
+              background: "var(--card)",
+              borderRadius: "var(--radius-xl)",
+              border: "1px solid var(--border)",
+              boxShadow: "var(--shadow-xs)",
+              overflow: "hidden",
+            }}
+          >
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                padding: "16px 24px",
+                borderBottom: "1px solid var(--border)",
+              }}
+            >
+              <h2
+                style={{
+                  fontFamily: "var(--font-display)",
+                  fontWeight: 700,
+                  fontSize: 15,
+                  color: "var(--tinta)",
+                  margin: 0,
+                }}
+              >
+                Histórico recente
+              </h2>
+              <Link
+                href="/treinamentos"
+                style={{
+                  fontSize: 12,
+                  color: "var(--azul-eletrico)",
+                  textDecoration: "none",
+                  fontWeight: 500,
+                }}
+              >
+                Ver todos
+              </Link>
+            </div>
+            <div style={{ overflowX: "auto" }}>
+              <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
+                <thead>
+                  <tr style={{ borderBottom: "1px solid var(--border)" }}>
+                    {["CÓDIGO", "TIPO", "CLIENTE", "PARTICIPANTE", "DATA E HORÁRIO", "SITUAÇÃO"].map(
+                      (col) => (
+                        <th
+                          key={col}
+                          style={{
+                            padding: "10px 16px",
+                            textAlign: "left",
+                            fontSize: 11,
+                            fontWeight: 600,
+                            color: "var(--muted-foreground)",
+                            letterSpacing: "0.06em",
+                            textTransform: "uppercase",
+                            whiteSpace: "nowrap",
+                          }}
+                        >
+                          {col}
+                        </th>
+                      ),
+                    )}
+                  </tr>
+                </thead>
+                <tbody>
+                  {serializedRecent.length === 0 ? (
+                    <tr>
+                      <td
+                        colSpan={6}
+                        style={{
+                          padding: "24px 16px",
+                          textAlign: "center",
+                          color: "var(--muted-foreground)",
+                          fontSize: 13,
+                        }}
+                      >
+                        Nenhum treinamento ainda.
+                      </td>
+                    </tr>
+                  ) : (
+                    serializedRecent.map((t) => {
+                      const sigTotal = t.signatures.length;
+                      const sigSigned = t.signatures.filter((s) => s.status === "SIGNED").length;
+                      const isFullySigned = t.status === "ISSUED" && sigTotal > 0 && sigSigned === sigTotal;
+                      const isCanceled = t.status === "CANCELED";
+
+                      const badgeStyle: React.CSSProperties = isFullySigned
+                        ? { color: "var(--success)", background: "var(--success-soft)", borderColor: "var(--success-border)" }
+                        : isCanceled
+                          ? { color: "var(--destructive)", background: "var(--destructive-soft)", borderColor: "var(--destructive-border)" }
+                          : { color: "var(--warning)", background: "var(--warning-soft)", borderColor: "var(--warning-border)" };
+
+                      const badgeLabel = isFullySigned
+                        ? "Assinado"
+                        : isCanceled
+                          ? "Cancelado"
+                          : sigTotal > 0
+                            ? `Pendente — ${sigSigned}/${sigTotal}`
+                            : "Pendente";
+
+                      const startsAt = new Date(t.startsAt);
+                      const dateStr = startsAt.toLocaleDateString("pt-BR", {
+                        day: "2-digit",
+                        month: "2-digit",
+                        year: "numeric",
+                      });
+                      const timeStr = startsAt.toLocaleTimeString("pt-BR", {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      });
+
+                      return (
+                        <tr key={t.id} style={{ borderBottom: "1px solid var(--border)" }}>
+                          <td style={{ padding: "12px 16px", whiteSpace: "nowrap" }}>
+                            <Link
+                              href={`/verificar/${t.verificationCode}`}
+                              style={{
+                                color: "var(--azul-eletrico)",
+                                textDecoration: "none",
+                                fontFamily: "var(--font-mono)",
+                                fontSize: 12,
+                                fontWeight: 500,
+                              }}
+                            >
+                              {t.verificationCode}
+                            </Link>
+                          </td>
+                          <td style={{ padding: "12px 16px" }}>
+                            <span style={{ color: "var(--azul-eletrico)", fontWeight: 500 }}>
+                              {t.trainingTypeName}
+                            </span>
+                          </td>
+                          <td style={{ padding: "12px 16px", color: "var(--foreground)" }}>
+                            {t.clientCompanyName}
+                          </td>
+                          <td style={{ padding: "12px 16px", color: "var(--foreground)" }}>
+                            {t.traineeName}
+                          </td>
+                          <td
+                            style={{
+                              padding: "12px 16px",
+                              fontFamily: "var(--font-mono)",
+                              fontSize: 12,
+                              color: "var(--muted-foreground)",
+                              whiteSpace: "nowrap",
+                            }}
+                          >
+                            {dateStr} {timeStr}
+                          </td>
+                          <td style={{ padding: "12px 16px" }}>
+                            <span
+                              style={{
+                                display: "inline-flex",
+                                alignItems: "center",
+                                gap: 5,
+                                fontSize: 11,
+                                fontWeight: 600,
+                                borderRadius: "var(--radius-full)",
+                                border: "1px solid",
+                                padding: "3px 10px",
+                                whiteSpace: "nowrap",
+                                ...badgeStyle,
+                              }}
+                            >
+                              <span
+                                style={{
+                                  width: 6,
+                                  height: 6,
+                                  borderRadius: 3,
+                                  background: "currentColor",
+                                  flexShrink: 0,
+                                }}
+                              />
+                              {badgeLabel}
+                            </span>
+                          </td>
+                        </tr>
+                      );
+                    })
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // ---- ADMIN DASHBOARD ----
   const lastMonthStart = new Date(year, month - 1, 1);
   const lastMonthEnd = new Date(year, month, 0, 23, 59, 59, 999);
 
@@ -180,7 +756,6 @@ export default async function DashboardPage() {
   const trainingsThisMonthCount = trainingsThisMonth.length;
   const awaitingSignatureCount = awaitingSignatureTrainings.length;
 
-  // Calculate % change from last month
   let pctChange: number | null = null;
   if (trainingsLastMonthCount > 0) {
     pctChange = Math.round(((trainingsThisMonthCount - trainingsLastMonthCount) / trainingsLastMonthCount) * 100);
@@ -188,7 +763,6 @@ export default async function DashboardPage() {
 
   const prevMonthName = MONTH_NAMES[month === 0 ? 11 : month - 1];
 
-  // Serialize data for client component
   const serializedRecentTrainings = recentTrainings.map((t) => ({
     id: t.id,
     verificationCode: t.verificationCode,

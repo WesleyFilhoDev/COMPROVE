@@ -44,18 +44,36 @@ function BarChartIcon() {
   );
 }
 
-const TABS = [
+const ADMIN_TABS = [
   { label: "Painel", href: "/dashboard", icon: <GridIcon /> },
   { label: "Colaboradores", href: "/colaboradores", icon: <PeopleIcon /> },
   { label: "Tipos", href: "/tipos-de-treinamento", icon: <TagIcon /> },
   { label: "Relatórios", href: "/relatorios", icon: <BarChartIcon /> },
 ];
 
-export function BottomNav() {
+const INSTRUCTOR_TABS = [
+  { label: "Painel", href: "/dashboard", icon: <GridIcon /> },
+  { label: "Novo", href: "/treinamentos/novo", icon: <PlusDocIcon /> },
+  { label: "Treinamentos", href: "/treinamentos", icon: <BarChartIcon /> },
+];
+
+function PlusDocIcon() {
+  return (
+    <svg width="20" height="20" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+      <path d="M9 1H4a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V6L9 1Z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
+      <path d="M9 1v5h5" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
+      <path d="M6 9.5h4M8 7.5v4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+export function BottomNav({ isAdmin = true }: { isAdmin?: boolean }) {
   const pathname = usePathname();
+  const TABS = isAdmin ? ADMIN_TABS : INSTRUCTOR_TABS;
 
   function isActive(href: string) {
     if (href === "/dashboard") return pathname === "/dashboard";
+    if (href === "/treinamentos") return pathname === "/treinamentos" || pathname.startsWith("/treinamentos/") && !pathname.startsWith("/treinamentos/novo");
     return pathname.startsWith(href);
   }
 

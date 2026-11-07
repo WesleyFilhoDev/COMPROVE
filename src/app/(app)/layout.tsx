@@ -56,6 +56,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
           companyName={companyName}
           companyInitials={companyInitials}
           userInitials={userInitials}
+          isAdmin={user.role === "ADMIN"}
         />
       </div>
 
@@ -100,7 +101,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
 
       {/* Mobile bottom nav — hidden on desktop */}
       <div className="md:hidden">
-        <BottomNav />
+        <BottomNav isAdmin={user.role === "ADMIN"} />
       </div>
     </>
   );

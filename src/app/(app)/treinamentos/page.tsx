@@ -31,7 +31,7 @@ export default async function TreinamentosPage() {
   const companyName = company?.name ?? "Minha empresa";
 
   const [trainings, trainingTypes] = await Promise.all([
-    listTrainings(db),
+    listTrainings(db, user.role === "COLLABORATOR" ? { instructorId: user.id } : undefined),
     listTrainingTypes(db),
   ]);
 

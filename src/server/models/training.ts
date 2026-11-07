@@ -66,6 +66,8 @@ export async function createTraining(
     verificationCode: string;
     contentHash: string;
     templateVersion: number;
+    traineePhone?: string | null;
+    contentMinistrado?: string | null;
   },
 ) {
   return tenantDb.training.create({

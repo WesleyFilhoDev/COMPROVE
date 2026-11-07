@@ -21,6 +21,8 @@ export const trainingCreateSchema = z.object({
     .string()
     .min(2, "Nome da empresa cliente deve ter ao menos 2 caracteres.")
     .max(200, "Nome da empresa cliente deve ter no máximo 200 caracteres."),
+  traineePhone: z.string().max(20).optional().nullable(),
+  contentMinistrado: z.string().max(2000).optional().nullable(),
 });
 
 export const trainingUpdateSchema = z.object({

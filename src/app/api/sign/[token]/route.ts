@@ -14,7 +14,6 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ tok
           trainingTypeNameSnapshot: true,
           instructorNameSnapshot: true,
           companyNameSnapshot: true,
-          companyCnpjSnapshot: true,
           clientCompanyName: true,
           startsAt: true,
           endsAt: true,
@@ -58,12 +57,23 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ tok
 }
 
 // POST /api/sign/[token] — confirmar assinatura
-export async function POST(_req: NextRequest, { params }: { params: Promise<{ token: string }> }) {
+export async function POST(req: NextRequest, { params }: { params: Promise<{ token: string }> }) {
   const { token } = await params;
 
   const signature = await db.signature.findUnique({
     where: { signToken: token },
-    include: { training: { select: { status: true } } },
+    include: {
+      training: {
+        select: {
+          id: true,
+          status: true,
+          traineeName: true,
+          traineePhone: true,
+          trainingTypeNameSnapshot: true,
+          verificationCode: true,
+        },
+      },
+    },
   });
 
   if (!signature) {
@@ -76,15 +86,51 @@ export async function POST(_req: NextRequest, { params }: { params: Promise<{ to
     return NextResponse.json({ error: "Treinamento cancelado." }, { status: 410 });
   }
 
+  let signatureImage: string | undefined;
+  try {
+    const body = (await req.json()) as { signatureImage?: string };
+    if (body.signatureImage && body.signatureImage.startsWith("data:image/png;base64,")) {
+      signatureImage = body.signatureImage;
+    }
+  } catch {
+    // body is optional
+  }
+
+  const userAgent = req.headers.get("user-agent") ?? "unknown";
+  const forwarded = req.headers.get("x-forwarded-for");
+  const ip = forwarded ? forwarded.split(",")[0].trim() : "unknown";
+
   await db.signature.update({
     where: { id: signature.id },
     data: {
       status: "SIGNED",
       method: "DIGITAL",
       signedAt: new Date(),
-      evidence: { ip: "unknown", userAgent: "web" },
+      signatureImage: signatureImage ?? null,
+      evidence: { ip, userAgent, signedAt: new Date().toISOString() },
     },
   });
 
-  return NextResponse.json({ ok: true });
+  // When instructor signs, return trainee info so the UI can show WhatsApp links
+  if (signature.signerRole === "INSTRUCTOR") {
+    const traineeSig = await db.signature.findFirst({
+      where: { trainingId: signature.training.id, signerRole: "TRAINEE" },
+      select: { signToken: true, status: true },
+    });
+
+    return NextResponse.json({
+      ok: true,
+      signerRole: "INSTRUCTOR",
+      trainee: {
+        name: signature.training.traineeName,
+        phone: signature.training.traineePhone ?? null,
+        signToken: traineeSig?.signToken ?? null,
+        alreadySigned: traineeSig?.status === "SIGNED",
+        trainingType: signature.training.trainingTypeNameSnapshot,
+        verificationCode: signature.training.verificationCode,
+      },
+    });
+  }
+
+  return NextResponse.json({ ok: true, signerRole: signature.signerRole });
 }

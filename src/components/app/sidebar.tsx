@@ -12,6 +12,7 @@ type SidebarProps = {
   companyName: string;
   companyInitials: string;
   userInitials: string;
+  isAdmin: boolean;
 };
 
 type NavItem = {
@@ -96,7 +97,7 @@ function ArrowRightIcon() {
   );
 }
 
-const NAV_SECTIONS = [
+const ADMIN_NAV_SECTIONS = [
   {
     label: "GERAL",
     items: [
@@ -114,7 +115,18 @@ const NAV_SECTIONS = [
   },
 ];
 
-export function Sidebar({ userName, userRole, companyName, companyInitials, userInitials }: SidebarProps) {
+const INSTRUCTOR_NAV_SECTIONS = [
+  {
+    label: "GERAL",
+    items: [
+      { label: "Painel", href: "/dashboard", icon: <GridIcon /> },
+      { label: "Novo treinamento", href: "/treinamentos/novo", icon: <PlusDocIcon /> },
+      { label: "Meus treinamentos", href: "/treinamentos", icon: <BarChartIcon /> },
+    ],
+  },
+];
+
+export function Sidebar({ userName, userRole, companyName, companyInitials, userInitials, isAdmin }: SidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
   const [dark, setDark] = useState(false);
@@ -212,7 +224,7 @@ export function Sidebar({ userName, userRole, companyName, companyInitials, user
             {companyName}
           </div>
           <div style={{ color: "var(--sidebar-foreground)", fontSize: 11, lineHeight: 1.3 }}>
-            Gestora da conta
+            {isAdmin ? "Gestora da conta" : "Área do Instrutor"}
           </div>
         </div>
       </div>
@@ -222,7 +234,7 @@ export function Sidebar({ userName, userRole, companyName, companyInitials, user
 
       {/* Nav sections */}
       <nav style={{ flex: 1, padding: "8px 8px", display: "flex", flexDirection: "column", gap: 4 }}>
-        {NAV_SECTIONS.map((section) => (
+        {(isAdmin ? ADMIN_NAV_SECTIONS : INSTRUCTOR_NAV_SECTIONS).map((section) => (
           <div key={section.label} style={{ marginBottom: 4 }}>
             <div
               style={{

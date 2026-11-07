@@ -182,8 +182,15 @@ model Training {
 
   // Quem recebeu
   traineeName       String
-  traineeCpf        String // só dígitos; mascarado nas listagens
+  traineeCpf        String  // só dígitos; mascarado nas listagens
+  traineePhone      String? // E.164, para envio do link por WhatsApp
   clientCompanyName String
+
+  // Conteúdo ministrado (snapshot; preenchido pelo instrutor na emissão)
+  contentMinistrado String?
+
+  // Agrupa treinamentos criados no mesmo lote (mesmo formulário, múltiplos participantes)
+  sessionId String?
 
   // Cópia dos dados na emissão: alterar cadastros não muda documentos antigos
   instructorNameSnapshot     String
@@ -226,8 +233,9 @@ model Signature {
   status     SignatureStatus  @default(PENDING)
   method     SignatureMethod?
   signedAt   DateTime?
-  signToken  String?          @unique // token para link público de assinatura (TRAINEE)
-  evidence   Json? // dados do provedor, IP, carimbo de tempo, arquivo escaneado etc.
+  signToken      String?          @unique // token para link público de assinatura
+  signatureImage String?                  // imagem da assinatura manuscrita (data URL PNG)
+  evidence       Json?                    // IP, userAgent, carimbo de tempo, etc.
   createdAt  DateTime         @default(now())
   updatedAt  DateTime         @updatedAt
 

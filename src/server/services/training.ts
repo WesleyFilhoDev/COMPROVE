@@ -145,6 +145,8 @@ export async function emitTraining(
     verificationCode,
     contentHash,
     templateVersion: 1,
+    traineePhone: data.traineePhone ?? null,
+    contentMinistrado: data.contentMinistrado ?? null,
   });
 
   // 8. Create signatures (INSTRUCTOR + TRAINEE, both with sign tokens)
