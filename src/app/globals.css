@@ -205,6 +205,9 @@
   --link: #6b8fff;
   --nevoa: #0d1526;
   --tinta: #e4eaf5;
+  --sidebar: #080f1e;
+  --sidebar-border: #131e35;
+  --sidebar-accent: #0d1a3a;
 }
 
 @layer base {

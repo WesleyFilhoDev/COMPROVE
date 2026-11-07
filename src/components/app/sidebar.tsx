@@ -150,7 +150,7 @@ export function Sidebar({ userName, userRole, companyName, companyInitials, user
         width: 220,
         minWidth: 220,
         height: "100vh",
-        background: "var(--tinta)",
+        background: "var(--sidebar)",
         display: "flex",
         flexDirection: "column",
         borderRight: "1px solid var(--sidebar-border)",
