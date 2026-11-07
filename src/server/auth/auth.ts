@@ -28,7 +28,7 @@ export const auth = betterAuth({
       });
       if (error) console.error("[verify] Resend error:", error);
     },
-    async sendResetPasswordEmail({ user, url }: { user: { email: string; name: string }; url: string }) {
+    async sendResetPassword({ user, url }: { user: { email: string; name: string }; url: string }) {
       const { error } = await resend.emails.send({
         from: process.env.EMAIL_FROM ?? "noreply@comproved.com.br",
         to: user.email,
