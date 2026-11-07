@@ -46,10 +46,10 @@ const EMPTY_FORM = {
   instructorId: "",
   startsAt: "",
   endsAt: "",
-  traineeName: "",
-  traineeCpf: "",
   clientCompanyName: "",
 };
+
+type TraineeRow = { name: string; cpf: string };
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -134,11 +134,13 @@ function NewTrainingPanel({
   trainingTypes: TrainingType[];
   collaborators: Collaborator[];
   onClose: () => void;
-  onCreated: (t: TrainingRow) => void;
+  onCreated: (trainings: TrainingRow[]) => void;
 }) {
   const [fields, setFields] = useState(EMPTY_FORM);
+  const [trainees, setTrainees] = useState<TraineeRow[]>([{ name: "", cpf: "" }]);
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
+  const [progress, setProgress] = useState<{ done: number; total: number } | null>(null);
   const firstRef = useRef<HTMLSelectElement>(null);
 
   useEffect(() => {
@@ -150,38 +152,62 @@ function NewTrainingPanel({
       setFields((p) => ({ ...p, [key]: e.target.value }));
   }
 
+  function setTrainee(idx: number, key: keyof TraineeRow, val: string) {
+    setTrainees((prev) => prev.map((t, i) => i === idx ? { ...t, [key]: val } : t));
+  }
+
+  function addTrainee() {
+    setTrainees((prev) => [...prev, { name: "", cpf: "" }]);
+  }
+
+  function removeTrainee(idx: number) {
+    setTrainees((prev) => prev.filter((_, i) => i !== idx));
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
     setPending(true);
+    setProgress({ done: 0, total: trainees.length });
 
-    const res = await fetch("/api/trainings", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ ...fields, traineeCpf: fields.traineeCpf.replace(/\D/g, "") }),
-    });
+    const created: TrainingRow[] = [];
 
-    setPending(false);
+    for (let i = 0; i < trainees.length; i++) {
+      const trainee = trainees[i];
+      const res = await fetch("/api/trainings", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ...fields,
+          traineeName: trainee.name,
+          traineeCpf: trainee.cpf.replace(/\D/g, ""),
+        }),
+      });
 
-    if (!res.ok) {
-      const json = (await res.json()) as {
-        error: string | { formErrors?: string[]; fieldErrors?: Record<string, string[]> };
-      };
-      let msg = "Erro ao emitir treinamento.";
-      if (typeof json.error === "string") {
-        msg = json.error;
-      } else if (json.error?.formErrors?.[0]) {
-        msg = json.error.formErrors[0];
-      } else if (json.error?.fieldErrors) {
-        const first = Object.values(json.error.fieldErrors).flat()[0];
-        if (first) msg = first;
+      if (!res.ok) {
+        const json = (await res.json()) as {
+          error: string | { formErrors?: string[]; fieldErrors?: Record<string, string[]> };
+        };
+        let msg = `Erro ao emitir treinamento para ${trainee.name || `treinando ${i + 1}`}.`;
+        if (typeof json.error === "string") msg = json.error;
+        else if (json.error?.fieldErrors) {
+          const first = Object.values(json.error.fieldErrors).flat()[0];
+          if (first) msg = first;
+        }
+        setPending(false);
+        setProgress(null);
+        setError(msg);
+        return;
       }
-      setError(msg);
-      return;
+
+      const json = (await res.json()) as { training: TrainingRow };
+      created.push(json.training);
+      setProgress({ done: i + 1, total: trainees.length });
     }
 
-    const json = (await res.json()) as { training: TrainingRow };
-    onCreated(json.training);
+    setPending(false);
+    setProgress(null);
+    onCreated(created);
   }
 
   const inputStyle: React.CSSProperties = {
@@ -343,39 +369,65 @@ function NewTrainingPanel({
             </div>
           </div>
 
-          {/* Treinando */}
+          {/* Treinandos */}
           <div>
-            <label htmlFor="tt-trainee-name" style={labelStyle}>
-              Nome do treinando <span style={{ color: "var(--destructive)" }}>*</span>
-            </label>
-            <input
-              id="tt-trainee-name"
-              type="text"
-              required
-              value={fields.traineeName}
-              onChange={set("traineeName")}
-              placeholder="João da Silva"
-              style={inputStyle}
-            />
-          </div>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
+              <span style={labelStyle}>
+                Treinandos <span style={{ color: "var(--destructive)" }}>*</span>
+              </span>
+              <button
+                type="button"
+                onClick={addTrainee}
+                style={{
+                  display: "flex", alignItems: "center", gap: 4,
+                  background: "none", border: "none", cursor: "pointer",
+                  fontSize: 12, fontWeight: 600, color: "var(--azul-eletrico)", padding: 0,
+                }}
+              >
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 1v12M1 7h12" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"/></svg>
+                Adicionar treinando
+              </button>
+            </div>
 
-          {/* CPF */}
-          <div>
-            <label htmlFor="tt-cpf" style={labelStyle}>
-              CPF do treinando <span style={{ color: "var(--destructive)" }}>*</span>
-            </label>
-            <input
-              id="tt-cpf"
-              type="text"
-              required
-              value={fields.traineeCpf}
-              onChange={(e) =>
-                setFields((p) => ({ ...p, traineeCpf: maskCpf(e.target.value) }))
-              }
-              placeholder="000.000.000-00"
-              maxLength={14}
-              style={inputStyle}
-            />
+            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+              {trainees.map((trainee, idx) => (
+                <div key={idx} style={{ background: "var(--nevoa)", border: "1px solid var(--border)", borderRadius: "var(--radius-md)", padding: "12px 12px 10px" }}>
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
+                    <span style={{ fontSize: 12, fontWeight: 600, color: "var(--muted-foreground)" }}>
+                      Treinando {trainees.length > 1 ? idx + 1 : ""}
+                    </span>
+                    {trainees.length > 1 && (
+                      <button
+                        type="button"
+                        onClick={() => removeTrainee(idx)}
+                        style={{ background: "none", border: "none", cursor: "pointer", color: "var(--destructive)", padding: 0, fontSize: 12 }}
+                      >
+                        Remover
+                      </button>
+                    )}
+                  </div>
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+                    <input
+                      type="text"
+                      required
+                      placeholder="Nome completo"
+                      value={trainee.name}
+                      onChange={(e) => setTrainee(idx, "name", e.target.value)}
+                      style={inputStyle}
+                    />
+                    <input
+                      type="text"
+                      required
+                      placeholder="000.000.000-00"
+                      maxLength={14}
+                      value={trainee.cpf}
+                      onChange={(e) => setTrainee(idx, "cpf", maskCpf(e.target.value))}
+                      style={inputStyle}
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
 
           {/* Empresa cliente */}
@@ -405,7 +457,11 @@ function NewTrainingPanel({
               className="cpv-btn cpv-btn--primary"
               style={{ flex: 1 }}
             >
-              {pending ? "Emitindo…" : "Emitir treinamento"}
+              {progress
+                ? `Emitindo ${progress.done}/${progress.total}…`
+                : trainees.length > 1
+                  ? `Emitir ${trainees.length} treinamentos`
+                  : "Emitir treinamento"}
             </button>
             <button
               type="button"
@@ -687,8 +743,8 @@ export function TreinamentosClient({
     }
   }
 
-  function handleCreated(t: TrainingRow) {
-    setTrainings((prev) => [t, ...prev]);
+  function handleCreated(created: TrainingRow[]) {
+    setTrainings((prev) => [...created, ...prev]);
     setShowPanel(false);
   }
 
