@@ -1,499 +1,867 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
+import Link from "next/link";
+
+// ─── Types ────────────────────────────────────────────────────────────────────
 
 type TrainingTypeRow = {
   id: string;
   name: string;
   description: string | null;
+  defaultDurationHours: number | null;
+  declarationText: string | null;
   archivedAt: string | null;
   createdAt: string;
+  usageCount: number;
 };
 
 type Props = {
+  companyName: string;
   initialTypes: TrainingTypeRow[];
 };
 
-type FormFields = {
+type PanelMode = "create" | "edit";
+
+type PanelFields = {
   name: string;
   description: string;
+  defaultDurationHours: string;
+  declarationText: string;
 };
 
-function ArchivedBadge() {
+// ─── Icons ────────────────────────────────────────────────────────────────────
+
+function PlusIcon() {
   return (
-    <span
-      className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium border"
-      style={{
-        background: "var(--muted)",
-        color: "var(--muted-foreground)",
-        borderColor: "var(--border)",
-      }}
-    >
-      Arquivado
-    </span>
+    <svg width="15" height="15" viewBox="0 0 15 15" fill="none" aria-hidden="true">
+      <path d="M7.5 2v11M2 7.5h11" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+function SearchIcon() {
+  return (
+    <svg width="15" height="15" viewBox="0 0 15 15" fill="none" aria-hidden="true">
+      <circle cx="6.5" cy="6.5" r="4" stroke="currentColor" strokeWidth="1.5" />
+      <path d="M9.5 9.5L13 13" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+    </svg>
   );
 }
 
 function PencilIcon() {
   return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      width="15"
-      height="15"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-    >
-      <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
-      <path d="m15 5 4 4" />
+    <svg width="14" height="14" viewBox="0 0 15 15" fill="none" aria-hidden="true">
+      <path
+        d="M11.5 1.5a1.42 1.42 0 0 1 2 2l-9 9-2.5.5.5-2.5 9-9Z"
+        stroke="currentColor"
+        strokeWidth="1.4"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
     </svg>
   );
 }
 
 function ArchiveIcon() {
   return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      width="15"
-      height="15"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-    >
-      <rect width="20" height="5" x="2" y="3" rx="1" />
-      <path d="M4 8v11a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8" />
-      <path d="M10 12h4" />
+    <svg width="14" height="14" viewBox="0 0 15 15" fill="none" aria-hidden="true">
+      <rect x="1" y="2" width="13" height="3" rx="1" stroke="currentColor" strokeWidth="1.4" />
+      <path
+        d="M2 5v7a1 1 0 0 0 1 1h9a1 1 0 0 0 1-1V5"
+        stroke="currentColor"
+        strokeWidth="1.4"
+        strokeLinecap="round"
+      />
+      <path d="M5.5 8.5h4" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
     </svg>
   );
 }
 
-export function TiposClient({ initialTypes }: Props) {
-  const [types, setTypes] = useState<TrainingTypeRow[]>(initialTypes);
-  const [showNewForm, setShowNewForm] = useState(false);
-  const [newFields, setNewFields] = useState<FormFields>({ name: "", description: "" });
-  const [newError, setNewError] = useState<string | null>(null);
-  const [createPending, setCreatePending] = useState(false);
+function XIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+      <path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+    </svg>
+  );
+}
 
-  const [editingId, setEditingId] = useState<string | null>(null);
-  const [editFields, setEditFields] = useState<FormFields>({ name: "", description: "" });
-  const [editError, setEditError] = useState<string | null>(null);
-  const [editPending, setEditPending] = useState(false);
+function UnarchiveIcon() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 15 15" fill="none" aria-hidden="true">
+      <rect x="1" y="2" width="13" height="3" rx="1" stroke="currentColor" strokeWidth="1.4" />
+      <path
+        d="M2 5v7a1 1 0 0 0 1 1h9a1 1 0 0 0 1-1V5"
+        stroke="currentColor"
+        strokeWidth="1.4"
+        strokeLinecap="round"
+      />
+      <path d="M5.5 8.5h4M7.5 11V7.5m-2 2l2-2 2 2" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
 
-  const [archivePending, setArchivePending] = useState<string | null>(null);
+// ─── Slide-in Panel ───────────────────────────────────────────────────────────
 
-  async function refreshTypes() {
-    const res = await fetch("/api/training-types");
-    if (!res.ok) return;
-    // GET returns active only — we need all, so we fetch and merge
-    const data = (await res.json()) as { types: TrainingTypeRow[] };
-    // Keep archived rows from current state, replace active ones
-    setTypes((prev) => {
-      const archived = prev.filter((t) => t.archivedAt !== null);
-      const freshActive = data.types;
-      return [...freshActive, ...archived];
-    });
+function Panel({
+  mode,
+  editType,
+  onClose,
+  onSaved,
+  onArchived,
+}: {
+  mode: PanelMode;
+  editType: TrainingTypeRow | null;
+  onClose: () => void;
+  onSaved: (t: TrainingTypeRow) => void;
+  onArchived: (id: string) => void;
+}) {
+  const [fields, setFields] = useState<PanelFields>({
+    name: editType?.name ?? "",
+    description: editType?.description ?? "",
+    defaultDurationHours:
+      editType?.defaultDurationHours != null
+        ? String(editType.defaultDurationHours)
+        : "",
+    declarationText: editType?.declarationText ?? "",
+  });
+  const [error, setError] = useState<string | null>(null);
+  const [pending, setPending] = useState(false);
+  const [archivePending, setArchivePending] = useState(false);
+  const firstInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    setTimeout(() => firstInputRef.current?.focus(), 80);
+  }, []);
+
+  function set(key: keyof PanelFields) {
+    return (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
+      setFields((p) => ({ ...p, [key]: e.target.value }));
   }
 
-  async function handleCreate(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    setNewError(null);
-    setCreatePending(true);
+    setError(null);
+    setPending(true);
 
-    const res = await fetch("/api/training-types", {
-      method: "POST",
+    const body: Record<string, unknown> = {
+      name: fields.name,
+      description: fields.description || undefined,
+      defaultDurationHours: fields.defaultDurationHours
+        ? parseFloat(fields.defaultDurationHours)
+        : undefined,
+      declarationText: fields.declarationText || undefined,
+    };
+
+    const url =
+      mode === "create"
+        ? "/api/training-types"
+        : `/api/training-types/${editType!.id}`;
+    const method = mode === "create" ? "POST" : "PATCH";
+
+    const res = await fetch(url, {
+      method,
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        name: newFields.name,
-        description: newFields.description || undefined,
-      }),
+      body: JSON.stringify(body),
     });
 
-    setCreatePending(false);
+    setPending(false);
 
     if (!res.ok) {
-      const json = (await res.json()) as { error: string | { formErrors?: string[] } };
+      const json = (await res.json()) as {
+        error: string | { formErrors?: string[] };
+      };
       const msg =
         typeof json.error === "string"
           ? json.error
-          : (json.error?.formErrors?.[0] ?? "Erro ao criar tipo de treinamento.");
-      setNewError(msg);
+          : (json.error?.formErrors?.[0] ?? "Erro ao salvar.");
+      setError(msg);
       return;
     }
 
     const json = (await res.json()) as { type: TrainingTypeRow };
-    setTypes((prev) => {
-      // Insert new active type in alphabetical order
-      const withNew = [...prev.filter((t) => t.archivedAt === null), json.type].sort((a, b) =>
-        a.name.localeCompare(b.name, "pt-BR"),
-      );
-      return [...withNew, ...prev.filter((t) => t.archivedAt !== null)];
+    onSaved(json.type);
+  }
+
+  async function handleArchive() {
+    if (!editType) return;
+    if (!confirm(`Arquivar "${editType.name}"? Ele não poderá mais ser usado em novos treinamentos.`))
+      return;
+    setArchivePending(true);
+    const res = await fetch(`/api/training-types/${editType.id}`, {
+      method: "DELETE",
     });
-    setNewFields({ name: "", description: "" });
-    setShowNewForm(false);
+    setArchivePending(false);
+    if (res.ok) onArchived(editType.id);
   }
 
-  function startEdit(type: TrainingTypeRow) {
-    setEditingId(type.id);
-    setEditFields({ name: type.name, description: type.description ?? "" });
-    setEditError(null);
-  }
-
-  function cancelEdit() {
-    setEditingId(null);
-    setEditError(null);
-  }
-
-  async function handleUpdate(e: React.FormEvent, id: string) {
-    e.preventDefault();
-    setEditError(null);
-    setEditPending(true);
-
-    const res = await fetch(`/api/training-types/${id}`, {
+  async function handleUnarchive() {
+    if (!editType) return;
+    setPending(true);
+    const res = await fetch(`/api/training-types/${editType.id}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        name: editFields.name,
-        description: editFields.description || undefined,
-      }),
+      body: JSON.stringify({ archivedAt: null }),
     });
-
-    setEditPending(false);
-
-    if (!res.ok) {
-      const json = (await res.json()) as { error: string | { formErrors?: string[] } };
-      const msg =
-        typeof json.error === "string"
-          ? json.error
-          : (json.error?.formErrors?.[0] ?? "Erro ao atualizar tipo de treinamento.");
-      setEditError(msg);
-      return;
+    setPending(false);
+    if (res.ok) {
+      const json = (await res.json()) as { type: TrainingTypeRow };
+      onSaved(json.type);
     }
-
-    const json = (await res.json()) as { type: TrainingTypeRow };
-    setTypes((prev) =>
-      prev.map((t) => (t.id === id ? { ...t, ...json.type } : t)),
-    );
-    setEditingId(null);
   }
 
-  async function handleArchive(id: string, name: string) {
-    if (!confirm(`Tem certeza que deseja arquivar "${name}"?`)) return;
-    setArchivePending(id);
+  const isArchived = editType?.archivedAt != null;
 
-    const res = await fetch(`/api/training-types/${id}`, { method: "DELETE" });
-    setArchivePending(null);
+  const inputStyle: React.CSSProperties = {
+    width: "100%",
+    height: 36,
+    padding: "0 12px",
+    border: "1px solid var(--border)",
+    borderRadius: "var(--radius-md)",
+    background: "var(--card)",
+    color: "var(--foreground)",
+    fontSize: 14,
+    outline: "none",
+    boxSizing: "border-box",
+  };
 
-    if (!res.ok) return;
+  const labelStyle: React.CSSProperties = {
+    display: "block",
+    fontSize: 13,
+    fontWeight: 600,
+    color: "var(--foreground)",
+    marginBottom: 6,
+  };
 
+  return (
+    <>
+      {/* Backdrop */}
+      <div
+        style={{
+          position: "fixed",
+          inset: 0,
+          zIndex: 40,
+          background: "rgba(15,26,46,0.3)",
+        }}
+        onClick={onClose}
+      />
+
+      {/* Panel */}
+      <div
+        style={{
+          position: "fixed",
+          top: 0,
+          right: 0,
+          bottom: 0,
+          zIndex: 50,
+          width: "100%",
+          maxWidth: 480,
+          background: "var(--card)",
+          borderLeft: "1px solid var(--border)",
+          boxShadow: "-8px 0 32px rgba(15,26,46,0.12)",
+          display: "flex",
+          flexDirection: "column",
+          overflowY: "auto",
+        }}
+      >
+        {/* Panel header */}
+        <div
+          style={{
+            padding: "20px 24px 16px",
+            borderBottom: "1px solid var(--border)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            flexShrink: 0,
+          }}
+        >
+          <div>
+            <h2
+              style={{
+                fontFamily: "var(--font-display)",
+                fontWeight: 800,
+                fontSize: 17,
+                color: "var(--tinta)",
+                margin: 0,
+              }}
+            >
+              {mode === "create" ? "Novo tipo de treinamento" : fields.name || "Editar tipo"}
+            </h2>
+            {mode === "edit" && editType && (
+              <p style={{ margin: "3px 0 0", fontSize: 12, color: "var(--muted-foreground)" }}>
+                {editType.usageCount} uso{editType.usageCount !== 1 ? "s" : ""} · criado em{" "}
+                {new Date(editType.createdAt).toLocaleDateString("pt-BR")}
+              </p>
+            )}
+          </div>
+          <button
+            onClick={onClose}
+            aria-label="Fechar"
+            style={{
+              background: "none",
+              border: "none",
+              cursor: "pointer",
+              color: "var(--muted-foreground)",
+              padding: 6,
+              borderRadius: "var(--radius-md)",
+              display: "flex",
+              alignItems: "center",
+            }}
+          >
+            <XIcon />
+          </button>
+        </div>
+
+        {/* Form */}
+        <form
+          onSubmit={handleSubmit}
+          style={{ padding: "24px", display: "flex", flexDirection: "column", gap: 20, flex: 1 }}
+        >
+          {/* Nome */}
+          <div>
+            <label htmlFor="tt-name" style={labelStyle}>
+              Nome <span style={{ color: "var(--destructive)" }}>*</span>
+            </label>
+            <input
+              id="tt-name"
+              ref={firstInputRef}
+              type="text"
+              required
+              value={fields.name}
+              onChange={set("name")}
+              placeholder="Ex: NR-35 Trabalho em Altura"
+              style={inputStyle}
+              disabled={isArchived}
+            />
+          </div>
+
+          {/* Descrição / Conteúdo programático */}
+          <div>
+            <label htmlFor="tt-description" style={labelStyle}>
+              Conteúdo programático
+            </label>
+            <textarea
+              id="tt-description"
+              value={fields.description}
+              onChange={set("description")}
+              placeholder="Tópicos abordados no treinamento (opcional)"
+              rows={4}
+              style={{
+                ...inputStyle,
+                height: "auto",
+                padding: "10px 12px",
+                resize: "vertical",
+                lineHeight: 1.5,
+              }}
+              disabled={isArchived}
+            />
+          </div>
+
+          {/* Carga horária */}
+          <div>
+            <label htmlFor="tt-hours" style={labelStyle}>
+              Carga horária padrão (horas)
+            </label>
+            <input
+              id="tt-hours"
+              type="number"
+              min="0.5"
+              step="0.5"
+              value={fields.defaultDurationHours}
+              onChange={set("defaultDurationHours")}
+              placeholder="Ex: 8"
+              style={inputStyle}
+              disabled={isArchived}
+            />
+            <p style={{ margin: "5px 0 0", fontSize: 12, color: "var(--muted-foreground)" }}>
+              Sugerida ao emitir um treinamento deste tipo.
+            </p>
+          </div>
+
+          {/* Texto de declaração */}
+          <div>
+            <label htmlFor="tt-declaration" style={labelStyle}>
+              Texto de declaração
+            </label>
+            <textarea
+              id="tt-declaration"
+              value={fields.declarationText}
+              onChange={set("declarationText")}
+              placeholder="Texto que aparece no comprovante como declaração do treinamento (opcional)"
+              rows={5}
+              style={{
+                ...inputStyle,
+                height: "auto",
+                padding: "10px 12px",
+                resize: "vertical",
+                lineHeight: 1.5,
+              }}
+              disabled={isArchived}
+            />
+            <p style={{ margin: "5px 0 0", fontSize: 12, color: "var(--muted-foreground)" }}>
+              Aparece no PDF do comprovante como declaração do conteúdo.
+            </p>
+          </div>
+
+          {error && (
+            <p style={{ margin: 0, fontSize: 13, color: "var(--destructive)" }}>{error}</p>
+          )}
+
+          {/* Footer buttons */}
+          <div
+            style={{
+              marginTop: "auto",
+              paddingTop: 8,
+              display: "flex",
+              alignItems: "center",
+              gap: 10,
+            }}
+          >
+            {!isArchived && (
+              <button
+                type="submit"
+                disabled={pending}
+                className="cpv-btn cpv-btn--primary"
+                style={{ flex: 1 }}
+              >
+                {pending ? "Salvando…" : mode === "create" ? "Criar tipo" : "Salvar alterações"}
+              </button>
+            )}
+
+            {mode === "edit" && !isArchived && (
+              <button
+                type="button"
+                disabled={archivePending}
+                onClick={handleArchive}
+                title="Arquivar tipo"
+                style={{
+                  flexShrink: 0,
+                  height: 40,
+                  padding: "0 14px",
+                  border: "1px solid var(--border)",
+                  borderRadius: "var(--radius-md)",
+                  background: "none",
+                  cursor: "pointer",
+                  color: "var(--muted-foreground)",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 6,
+                  fontSize: 13,
+                  fontWeight: 500,
+                }}
+              >
+                <ArchiveIcon />
+                {archivePending ? "Arquivando…" : "Arquivar"}
+              </button>
+            )}
+
+            {mode === "edit" && isArchived && (
+              <button
+                type="button"
+                disabled={pending}
+                onClick={handleUnarchive}
+                className="cpv-btn cpv-btn--outline"
+                style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}
+              >
+                <UnarchiveIcon />
+                {pending ? "Restaurando…" : "Restaurar tipo"}
+              </button>
+            )}
+
+            <button
+              type="button"
+              onClick={onClose}
+              style={{
+                flexShrink: 0,
+                height: 40,
+                padding: "0 14px",
+                border: "none",
+                borderRadius: "var(--radius-md)",
+                background: "none",
+                cursor: "pointer",
+                color: "var(--muted-foreground)",
+                fontSize: 13,
+                fontWeight: 500,
+              }}
+            >
+              Cancelar
+            </button>
+          </div>
+        </form>
+      </div>
+    </>
+  );
+}
+
+// ─── Main component ───────────────────────────────────────────────────────────
+
+type TabId = "ativos" | "arquivados";
+
+export function TiposClient({ companyName, initialTypes }: Props) {
+  const [types, setTypes] = useState<TrainingTypeRow[]>(initialTypes);
+  const [activeTab, setActiveTab] = useState<TabId>("ativos");
+  const [search, setSearch] = useState("");
+  const [panel, setPanel] = useState<{
+    open: boolean;
+    mode: PanelMode;
+    editType: TrainingTypeRow | null;
+  }>({ open: false, mode: "create", editType: null });
+
+  function openCreate() {
+    setPanel({ open: true, mode: "create", editType: null });
+  }
+
+  function openEdit(t: TrainingTypeRow) {
+    setPanel({ open: true, mode: "edit", editType: t });
+  }
+
+  function closePanel() {
+    setPanel((p) => ({ ...p, open: false }));
+  }
+
+  function handleSaved(saved: TrainingTypeRow) {
+    setTypes((prev) => {
+      const existing = prev.find((t) => t.id === saved.id);
+      if (existing) {
+        return prev.map((t) => (t.id === saved.id ? { ...t, ...saved } : t));
+      }
+      return [...prev, saved];
+    });
+    closePanel();
+    // Switch tab to show the saved type
+    if (saved.archivedAt) setActiveTab("arquivados");
+    else setActiveTab("ativos");
+  }
+
+  function handleArchived(id: string) {
     setTypes((prev) =>
       prev.map((t) =>
         t.id === id ? { ...t, archivedAt: new Date().toISOString() } : t,
       ),
     );
+    closePanel();
+    setActiveTab("arquivados");
   }
 
   const activeTypes = types.filter((t) => t.archivedAt === null);
   const archivedTypes = types.filter((t) => t.archivedAt !== null);
 
-  const inputStyle: React.CSSProperties = {
-    height: "var(--control-sm)",
-    padding: "0 var(--space-3)",
-    border: "1px solid var(--border)",
-    borderRadius: "var(--radius-md)",
-    background: "var(--card)",
-    color: "var(--foreground)",
-    fontSize: "14px",
-    fontFamily: "var(--font-sans)",
-    outline: "none",
-    width: "100%",
-  };
+  const displayTypes = (activeTab === "ativos" ? activeTypes : archivedTypes).filter((t) => {
+    if (!search) return true;
+    const q = search.toLowerCase();
+    return (
+      t.name.toLowerCase().includes(q) ||
+      (t.description ?? "").toLowerCase().includes(q)
+    );
+  });
 
-  const tdStyle: React.CSSProperties = {
-    height: "var(--table-row)",
-    padding: "0 16px",
-    borderBottom: "1px solid var(--border)",
-    verticalAlign: "middle",
-  };
-
-  const thStyle: React.CSSProperties = {
-    height: "40px",
-    padding: "0 16px",
-    borderBottom: "1px solid var(--border)",
-    background: "var(--nevoa)",
-    textAlign: "left",
-    fontSize: "12px",
-    fontWeight: 600,
-    color: "var(--muted-foreground)",
-    textTransform: "uppercase",
-    letterSpacing: "0.04em",
-    whiteSpace: "nowrap",
-  };
+  const tabs: { id: TabId; label: string; count: number }[] = [
+    { id: "ativos", label: "Ativos", count: activeTypes.length },
+    { id: "arquivados", label: "Arquivados", count: archivedTypes.length },
+  ];
 
   return (
-    <div>
-      {/* Header action */}
-      <div className="flex items-center justify-between mb-4">
-        <span />
+    <div className="flex-1 min-h-screen" style={{ background: "var(--nevoa)" }}>
+      {/* Sticky top bar */}
+      <div
+        style={{
+          position: "sticky",
+          top: 0,
+          zIndex: 10,
+          background: "var(--card)",
+          borderBottom: "1px solid var(--border)",
+          padding: "0 32px",
+          height: 56,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+        }}
+      >
+        {/* Breadcrumb */}
+        <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 13 }}>
+          <Link
+            href="/dashboard"
+            style={{ color: "var(--muted-foreground)", textDecoration: "none", fontWeight: 500 }}
+          >
+            {companyName}
+          </Link>
+          <span style={{ color: "var(--border)" }}>/</span>
+          <span style={{ color: "var(--azul-eletrico)", fontWeight: 700 }}>
+            Tipos de treinamento
+          </span>
+        </div>
+
+        {/* Action */}
         <button
           className="cpv-btn cpv-btn--primary cpv-btn--sm"
-          onClick={() => {
-            setShowNewForm((v) => !v);
-            setNewError(null);
-            setNewFields({ name: "", description: "" });
-          }}
+          onClick={openCreate}
+          style={{ display: "flex", alignItems: "center", gap: 6 }}
         >
-          + Novo tipo
+          <PlusIcon />
+          Novo tipo
         </button>
       </div>
 
-      {/* Table */}
-      <div
-        className="overflow-x-auto rounded-xl border"
-        style={{ borderColor: "var(--border)", background: "var(--card)" }}
-      >
-        <table
+      {/* Page body */}
+      <div style={{ padding: "28px 32px", maxWidth: 1100 }}>
+        {/* Heading */}
+        <div style={{ marginBottom: 24 }}>
+          <h1
+            style={{
+              fontFamily: "var(--font-display)",
+              fontWeight: 800,
+              fontSize: 24,
+              color: "var(--tinta)",
+              margin: "0 0 4px",
+            }}
+          >
+            Tipos de treinamento
+          </h1>
+          <p style={{ margin: 0, fontSize: 14, color: "var(--muted-foreground)" }}>
+            Modelos de treinamento emitidos pela {companyName}
+          </p>
+        </div>
+
+        {/* Tabs row */}
+        <div
           style={{
-            width: "100%",
-            borderCollapse: "collapse",
-            fontSize: "14px",
-            fontFamily: "var(--font-sans)",
+            display: "flex",
+            alignItems: "center",
+            borderBottom: "1px solid var(--border)",
+            marginBottom: 20,
           }}
         >
-          <thead>
-            <tr>
-              <th style={thStyle}>Nome</th>
-              <th style={thStyle}>Descrição</th>
-              <th style={{ ...thStyle, width: "120px" }}>Status</th>
-              <th style={{ ...thStyle, width: "120px" }}>Ações</th>
-            </tr>
-          </thead>
-          <tbody>
-            {/* New type inline form row */}
-            {showNewForm && (
-              <tr style={{ background: "var(--accent)" }}>
-                <td style={{ ...tdStyle, borderBottom: "1px solid var(--border)" }}>
-                  <form id="new-type-form" onSubmit={handleCreate} />
-                  <input
-                    form="new-type-form"
-                    style={inputStyle}
-                    type="text"
-                    placeholder="Nome do tipo *"
-                    required
-                    value={newFields.name}
-                    onChange={(e) =>
-                      setNewFields((p) => ({ ...p, name: e.target.value }))
-                    }
-                    autoFocus
-                  />
-                </td>
-                <td style={{ ...tdStyle, borderBottom: "1px solid var(--border)" }}>
-                  <input
-                    form="new-type-form"
-                    style={inputStyle}
-                    type="text"
-                    placeholder="Descrição (opcional)"
-                    value={newFields.description}
-                    onChange={(e) =>
-                      setNewFields((p) => ({ ...p, description: e.target.value }))
-                    }
-                  />
-                  {newError && (
-                    <p
-                      className="text-xs mt-1"
-                      style={{ color: "var(--destructive)" }}
-                    >
-                      {newError}
-                    </p>
-                  )}
-                </td>
-                <td style={{ ...tdStyle, borderBottom: "1px solid var(--border)" }} />
-                <td style={{ ...tdStyle, borderBottom: "1px solid var(--border)" }}>
-                  <div className="flex items-center gap-2">
-                    <button
-                      form="new-type-form"
-                      type="submit"
-                      disabled={createPending}
-                      className="cpv-btn cpv-btn--primary cpv-btn--sm"
-                    >
-                      {createPending ? "Salvando…" : "Salvar"}
-                    </button>
-                    <button
-                      type="button"
-                      className="cpv-btn cpv-btn--outline cpv-btn--sm"
-                      onClick={() => setShowNewForm(false)}
-                    >
-                      Cancelar
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            )}
+          {tabs.map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => { setActiveTab(tab.id); setSearch(""); }}
+              style={{
+                background: "none",
+                border: "none",
+                cursor: "pointer",
+                padding: "10px 16px",
+                fontSize: 14,
+                fontWeight: activeTab === tab.id ? 700 : 500,
+                color: activeTab === tab.id ? "var(--azul-eletrico)" : "var(--muted-foreground)",
+                borderBottom:
+                  activeTab === tab.id
+                    ? "2px solid var(--azul-eletrico)"
+                    : "2px solid transparent",
+                marginBottom: -1,
+                display: "flex",
+                alignItems: "center",
+                gap: 6,
+                transition: "color 0.15s",
+              }}
+            >
+              {tab.label}
+              <span
+                style={{
+                  fontSize: 11,
+                  fontWeight: 700,
+                  borderRadius: "var(--radius-full)",
+                  padding: "2px 7px",
+                  background:
+                    activeTab === tab.id ? "var(--azul-gelo)" : "var(--nevoa)",
+                  color:
+                    activeTab === tab.id
+                      ? "var(--azul-eletrico)"
+                      : "var(--muted-foreground)",
+                }}
+              >
+                {tab.count}
+              </span>
+            </button>
+          ))}
+        </div>
 
-            {/* Active type rows */}
-            {activeTypes.length === 0 && !showNewForm && (
-              <tr>
-                <td
-                  colSpan={4}
+        {/* Search */}
+        <div style={{ position: "relative", marginBottom: 20, maxWidth: 360 }}>
+          <span
+            style={{
+              position: "absolute",
+              left: 10,
+              top: "50%",
+              transform: "translateY(-50%)",
+              color: "var(--muted-foreground)",
+              pointerEvents: "none",
+            }}
+          >
+            <SearchIcon />
+          </span>
+          <input
+            type="text"
+            placeholder="Buscar por nome"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            style={{
+              width: "100%",
+              height: 36,
+              padding: "0 12px 0 36px",
+              border: "1px solid var(--border)",
+              borderRadius: "var(--radius-md)",
+              background: "var(--card)",
+              color: "var(--foreground)",
+              fontSize: 13,
+              outline: "none",
+              boxSizing: "border-box",
+            }}
+          />
+        </div>
+
+        {/* Table */}
+        <div
+          style={{
+            background: "var(--card)",
+            borderRadius: "var(--radius-xl)",
+            border: "1px solid var(--border)",
+            overflow: "hidden",
+          }}
+        >
+          {displayTypes.length === 0 ? (
+            <div
+              style={{
+                padding: 40,
+                textAlign: "center",
+                color: "var(--muted-foreground)",
+                fontSize: 14,
+              }}
+            >
+              {search
+                ? "Nenhum resultado encontrado."
+                : activeTab === "ativos"
+                  ? "Nenhum tipo ativo. Crie o primeiro clicando em \u201cNovo tipo\u201d."
+                  : "Nenhum tipo arquivado."}
+            </div>
+          ) : (
+            <table
+              style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}
+            >
+              <thead>
+                <tr
                   style={{
-                    ...tdStyle,
-                    textAlign: "center",
-                    color: "var(--muted-foreground)",
+                    borderBottom: "1px solid var(--border)",
+                    background: "var(--nevoa)",
                   }}
                 >
-                  Nenhum tipo de treinamento cadastrado ainda.
-                </td>
-              </tr>
-            )}
-
-            {activeTypes.map((type) =>
-              editingId === type.id ? (
-                <tr key={type.id} style={{ background: "var(--accent)" }}>
-                  <td style={tdStyle}>
-                    <form id={`edit-form-${type.id}`} onSubmit={(e) => handleUpdate(e, type.id)} />
-                    <input
-                      form={`edit-form-${type.id}`}
-                      style={inputStyle}
-                      type="text"
-                      required
-                      value={editFields.name}
-                      onChange={(e) =>
-                        setEditFields((p) => ({ ...p, name: e.target.value }))
-                      }
-                      autoFocus
-                    />
-                  </td>
-                  <td style={tdStyle}>
-                    <input
-                      form={`edit-form-${type.id}`}
-                      style={inputStyle}
-                      type="text"
-                      placeholder="Descrição (opcional)"
-                      value={editFields.description}
-                      onChange={(e) =>
-                        setEditFields((p) => ({ ...p, description: e.target.value }))
-                      }
-                    />
-                    {editError && (
-                      <p
-                        className="text-xs mt-1"
-                        style={{ color: "var(--destructive)" }}
-                      >
-                        {editError}
-                      </p>
-                    )}
-                  </td>
-                  <td style={tdStyle} />
-                  <td style={tdStyle}>
-                    <div className="flex items-center gap-2">
-                      <button
-                        form={`edit-form-${type.id}`}
-                        type="submit"
-                        disabled={editPending}
-                        className="cpv-btn cpv-btn--primary cpv-btn--sm"
-                      >
-                        {editPending ? "Salvando…" : "Salvar"}
-                      </button>
-                      <button
-                        type="button"
-                        className="cpv-btn cpv-btn--outline cpv-btn--sm"
-                        onClick={cancelEdit}
-                      >
-                        Cancelar
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ) : (
-                <tr key={type.id}>
-                  <td
-                    style={{ ...tdStyle, fontWeight: 500, color: "var(--foreground)" }}
-                  >
-                    {type.name}
-                  </td>
-                  <td style={{ ...tdStyle, color: "var(--muted-foreground)" }}>
-                    {type.description ?? (
-                      <span style={{ color: "var(--border)" }}>—</span>
-                    )}
-                  </td>
-                  <td style={tdStyle}>
-                    <span
-                      className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium border"
+                  {["NOME", "CARGA HOR.", "USO", ""].map((col, i) => (
+                    <th
+                      key={i}
                       style={{
-                        background: "var(--success-soft)",
-                        color: "var(--success)",
-                        borderColor: "var(--success-border)",
+                        padding: "10px 16px",
+                        textAlign: "left",
+                        fontSize: 11,
+                        fontWeight: 600,
+                        color: "var(--muted-foreground)",
+                        letterSpacing: "0.06em",
+                        textTransform: "uppercase",
+                        whiteSpace: "nowrap",
+                        ...(i === 3 ? { width: 60 } : {}),
                       }}
                     >
-                      Ativo
-                    </span>
-                  </td>
-                  <td style={tdStyle}>
-                    <div className="flex items-center gap-2">
+                      {col}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {displayTypes.map((t) => (
+                  <tr
+                    key={t.id}
+                    style={{
+                      borderBottom: "1px solid var(--border)",
+                      opacity: t.archivedAt ? 0.6 : 1,
+                    }}
+                  >
+                    <td style={{ padding: "12px 16px" }}>
+                      <div>
+                        <span
+                          style={{
+                            fontWeight: 600,
+                            color: t.archivedAt
+                              ? "var(--muted-foreground)"
+                              : "var(--foreground)",
+                            textDecoration: t.archivedAt ? "line-through" : "none",
+                          }}
+                        >
+                          {t.name}
+                        </span>
+                        {t.description && (
+                          <div
+                            style={{
+                              fontSize: 12,
+                              color: "var(--muted-foreground)",
+                              marginTop: 2,
+                              maxWidth: 480,
+                              overflow: "hidden",
+                              textOverflow: "ellipsis",
+                              whiteSpace: "nowrap",
+                            }}
+                          >
+                            {t.description}
+                          </div>
+                        )}
+                      </div>
+                    </td>
+                    <td
+                      style={{
+                        padding: "12px 16px",
+                        color: "var(--muted-foreground)",
+                        fontFamily: "var(--font-mono)",
+                        fontSize: 13,
+                        whiteSpace: "nowrap",
+                      }}
+                    >
+                      {t.defaultDurationHours != null
+                        ? `${t.defaultDurationHours}h`
+                        : "—"}
+                    </td>
+                    <td
+                      style={{
+                        padding: "12px 16px",
+                        color: "var(--muted-foreground)",
+                        fontFamily: "var(--font-mono)",
+                        fontSize: 13,
+                      }}
+                    >
+                      {t.usageCount}
+                    </td>
+                    <td style={{ padding: "12px 16px" }}>
                       <button
-                        type="button"
+                        onClick={() => openEdit(t)}
                         title="Editar"
-                        onClick={() => startEdit(type)}
-                        className="cpv-btn cpv-btn--ghost cpv-btn--sm"
-                        style={{ padding: "0 8px", color: "var(--muted-foreground)" }}
+                        style={{
+                          background: "none",
+                          border: "none",
+                          cursor: "pointer",
+                          color: "var(--muted-foreground)",
+                          padding: 6,
+                          borderRadius: "var(--radius-md)",
+                          display: "flex",
+                          alignItems: "center",
+                        }}
                       >
                         <PencilIcon />
                       </button>
-                      <button
-                        type="button"
-                        title="Arquivar"
-                        disabled={archivePending === type.id}
-                        onClick={() => handleArchive(type.id, type.name)}
-                        className="cpv-btn cpv-btn--ghost cpv-btn--sm"
-                        style={{ padding: "0 8px", color: "var(--muted-foreground)" }}
-                      >
-                        {archivePending === type.id ? (
-                          <span style={{ fontSize: "12px" }}>…</span>
-                        ) : (
-                          <ArchiveIcon />
-                        )}
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ),
-            )}
-
-            {/* Archived type rows */}
-            {archivedTypes.map((type) => (
-              <tr
-                key={type.id}
-                style={{ opacity: 0.55, background: "var(--nevoa)" }}
-              >
-                <td
-                  style={{
-                    ...tdStyle,
-                    fontWeight: 500,
-                    color: "var(--muted-foreground)",
-                    textDecoration: "line-through",
-                  }}
-                >
-                  {type.name}
-                </td>
-                <td style={{ ...tdStyle, color: "var(--muted-foreground)" }}>
-                  {type.description ?? <span style={{ color: "var(--border)" }}>—</span>}
-                </td>
-                <td style={tdStyle}>
-                  <ArchivedBadge />
-                </td>
-                <td style={tdStyle} />
-              </tr>
-            ))}
-          </tbody>
-        </table>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+        </div>
       </div>
+
+      {/* Slide-in panel */}
+      {panel.open && (
+        <Panel
+          mode={panel.mode}
+          editType={panel.editType}
+          onClose={closePanel}
+          onSaved={handleSaved}
+          onArchived={handleArchived}
+        />
+      )}
     </div>
   );
 }

@@ -4,6 +4,7 @@ import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { auth } from "@/server/auth/auth";
 import { tenantDb } from "@/server/db/tenant";
+import { findCompanyById } from "@/server/models/company";
 import { listInvitations } from "@/server/models/invitation";
 import type { UserRole } from "@/generated/prisma/client";
 import { ColaboradoresClient } from "./colaboradores-client";
@@ -25,18 +26,77 @@ export default async function ColaboradoresPage() {
   }
 
   const db = tenantDb(user.companyId);
+  const company = await findCompanyById(user.companyId);
+  const companyName = company?.name ?? "Minha empresa";
 
   // Fetch collaborators (users in this company with COLLABORATOR role)
   const collaborators = await db.user.findMany({
     where: { companyId: user.companyId, role: "COLLABORATOR" },
-    select: { id: true, name: true, email: true, jobTitle: true },
+    select: { id: true, name: true, email: true, jobTitle: true, deactivatedAt: true },
     orderBy: { name: "asc" },
   });
 
   // Fetch invitations
   const invitations = await listInvitations(db);
 
-  // Serialize for client component (Dates → strings)
+  // Trainings count per user this month
+  const now = new Date();
+  const thisMonthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+  const thisMonthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999);
+
+  const trainingGroups = await db.training.groupBy({
+    by: ["instructorId"],
+    where: {
+      companyId: user.companyId,
+      startsAt: { gte: thisMonthStart, lte: thisMonthEnd },
+    },
+    _count: { id: true },
+  });
+
+  const trainingCountByUser = new Map<string, number>(
+    trainingGroups.map((g) => [g.instructorId, g._count.id]),
+  );
+
+  // Last session per collaborator
+  const collaboratorIds = collaborators.map((c) => c.id);
+  const sessions = collaboratorIds.length > 0
+    ? await db.session.findMany({
+        where: { userId: { in: collaboratorIds } },
+        orderBy: { createdAt: "desc" },
+        select: { userId: true, createdAt: true },
+      })
+    : [];
+
+  const lastAccessByUser = new Map<string, Date>();
+  for (const s of sessions) {
+    if (!lastAccessByUser.has(s.userId)) {
+      lastAccessByUser.set(s.userId, s.createdAt);
+    }
+  }
+
+  const activeCollaborators = collaborators
+    .filter((c) => !c.deactivatedAt)
+    .map((c) => ({
+      id: c.id,
+      name: c.name,
+      email: c.email,
+      jobTitle: c.jobTitle,
+      trainingsThisMonth: trainingCountByUser.get(c.id) ?? 0,
+      lastAccess: lastAccessByUser.get(c.id)?.toISOString() ?? null,
+    }));
+
+  const inactiveCollaborators = collaborators
+    .filter((c) => !!c.deactivatedAt)
+    .map((c) => ({
+      id: c.id,
+      name: c.name,
+      email: c.email,
+      jobTitle: c.jobTitle,
+      trainingsThisMonth: trainingCountByUser.get(c.id) ?? 0,
+      lastAccess: lastAccessByUser.get(c.id)?.toISOString() ?? null,
+    }));
+
+  // Serialize invitations
   const serializedInvitations = invitations.map((inv) => ({
     id: inv.id,
     name: inv.name,
@@ -50,23 +110,11 @@ export default async function ColaboradoresPage() {
   }));
 
   return (
-    <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-      <div className="mb-8">
-        <h1
-          className="text-2xl font-extrabold"
-          style={{ fontFamily: "var(--font-display)", color: "var(--tinta)" }}
-        >
-          Colaboradores
-        </h1>
-        <p className="text-sm mt-1" style={{ color: "var(--muted-foreground)" }}>
-          Gerencie os membros da equipe e os convites pendentes.
-        </p>
-      </div>
-
-      <ColaboradoresClient
-        collaborators={collaborators}
-        invitations={serializedInvitations}
-      />
-    </main>
+    <ColaboradoresClient
+      companyName={companyName}
+      activeCollaborators={activeCollaborators}
+      inactiveCollaborators={inactiveCollaborators}
+      invitations={serializedInvitations}
+    />
   );
 }

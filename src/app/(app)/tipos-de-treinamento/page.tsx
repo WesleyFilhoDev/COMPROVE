@@ -4,6 +4,7 @@ import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { auth } from "@/server/auth/auth";
 import { tenantDb } from "@/server/db/tenant";
+import { findCompanyById } from "@/server/models/company";
 import { listAllTrainingTypes } from "@/server/models/training-type";
 import type { UserRole } from "@/generated/prisma/client";
 import { TiposClient } from "./tipos-client";
@@ -25,31 +26,37 @@ export default async function TiposDeTreinamentoPage() {
   }
 
   const db = tenantDb(user.companyId);
+  const company = await findCompanyById(user.companyId);
+  const companyName = company?.name ?? "Minha empresa";
+
   const rawTypes = await listAllTrainingTypes(db);
+
+  // Usage count per type
+  const usageGroups = await db.training.groupBy({
+    by: ["trainingTypeId"],
+    where: { companyId: user.companyId },
+    _count: { id: true },
+  });
+
+  const usageByType = new Map<string, number>(
+    usageGroups.map((g) => [g.trainingTypeId, g._count.id]),
+  );
 
   const types = rawTypes.map((t) => ({
     id: t.id,
     name: t.name,
     description: t.description,
+    defaultDurationHours: t.defaultDurationHours,
+    declarationText: t.declarationText,
     archivedAt: t.archivedAt?.toISOString() ?? null,
     createdAt: t.createdAt.toISOString(),
+    usageCount: usageByType.get(t.id) ?? 0,
   }));
 
   return (
-    <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-      <div className="mb-8">
-        <h1
-          className="text-2xl font-extrabold"
-          style={{ fontFamily: "var(--font-display)", color: "var(--tinta)" }}
-        >
-          Tipos de Treinamento
-        </h1>
-        <p className="text-sm mt-1" style={{ color: "var(--muted-foreground)" }}>
-          Gerencie os tipos de treinamento disponíveis para a sua empresa.
-        </p>
-      </div>
-
-      <TiposClient initialTypes={types} />
-    </main>
+    <TiposClient
+      companyName={companyName}
+      initialTypes={types}
+    />
   );
 }

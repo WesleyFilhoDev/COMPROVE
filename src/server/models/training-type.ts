@@ -36,7 +36,13 @@ export async function createTrainingType(
 export async function updateTrainingType(
   tenantDb: TenantDb,
   id: string,
-  data: { name?: string; description?: string },
+  data: {
+    name?: string;
+    description?: string;
+    defaultDurationHours?: number | null;
+    declarationText?: string | null;
+    archivedAt?: Date | null;
+  },
 ) {
   return tenantDb.trainingType.update({
     where: { id },

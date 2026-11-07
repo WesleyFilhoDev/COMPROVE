@@ -70,7 +70,19 @@ export async function updateTrainingType(
     }
   }
 
-  return modelUpdate(tenantDb, id, data);
+  // Map archivedAt string to Date or null
+  const updateData: Parameters<typeof modelUpdate>[2] = {
+    name: data.name,
+    description: data.description,
+    defaultDurationHours: data.defaultDurationHours,
+    declarationText: data.declarationText,
+  };
+
+  if ("archivedAt" in data) {
+    updateData.archivedAt = data.archivedAt ? new Date(data.archivedAt) : null;
+  }
+
+  return modelUpdate(tenantDb, id, updateData);
 }
 
 export async function archiveTrainingType(

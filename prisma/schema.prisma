@@ -151,13 +151,15 @@ model Invitation {
 }
 
 model TrainingType {
-  id          String    @id @default(uuid(7))
-  companyId   String
-  name        String
-  description String?
-  archivedAt  DateTime? // arquiva em vez de apagar: o histórico depende dele
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  id                   String    @id @default(uuid(7))
+  companyId            String
+  name                 String
+  description          String?
+  defaultDurationHours Float?
+  declarationText      String?
+  archivedAt           DateTime? // arquiva em vez de apagar: o histórico depende dele
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
 
   company   Company    @relation(fields: [companyId], references: [id], onDelete: Restrict)
   trainings Training[]
