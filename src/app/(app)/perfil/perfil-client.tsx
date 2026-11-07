@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import type { UserRole } from "@/generated/prisma/client";
 
@@ -14,6 +15,7 @@ type Props = {
     nameChangedAt: string | null;
     role: UserRole | null;
     jobTitle: string | null;
+    image: string | null;
   };
   company: {
     id: string;
@@ -212,9 +214,41 @@ function EditableField({
 
 // ─── Main ─────────────────────────────────────────────────────────────────────
 
+function CameraIcon() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+      <path d="M6 2H10L11.5 4H14a1 1 0 0 1 1 1v8a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1h2.5L6 2Z" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round"/>
+      <circle cx="8" cy="8.5" r="2" stroke="currentColor" strokeWidth="1.4"/>
+    </svg>
+  );
+}
+
 export function PerfilClient({ user, company }: Props) {
   const [userName, setUserName] = useState(user.name);
   const [jobTitle, setJobTitle] = useState(user.jobTitle ?? "");
+  const [avatarUrl, setAvatarUrl] = useState(user.image ?? "");
+  const [avatarPending, setAvatarPending] = useState(false);
+  const [avatarError, setAvatarError] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  async function handleAvatarChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setAvatarError(null);
+    setAvatarPending(true);
+    const form = new FormData();
+    form.append("file", file);
+    const res = await fetch("/api/profile/avatar", { method: "POST", body: form });
+    setAvatarPending(false);
+    if (res.ok) {
+      const data = (await res.json()) as { url: string };
+      setAvatarUrl(data.url);
+    } else {
+      const data = (await res.json()) as { error: string };
+      setAvatarError(data.error ?? "Erro ao enviar imagem.");
+    }
+    e.target.value = "";
+  }
   const [companyName, setCompanyName] = useState(company.name);
   const [cnpj, setCnpj] = useState(company.cnpj ? formatCnpj(company.cnpj) : "");
   const [cnpjEditing, setCnpjEditing] = useState(false);
@@ -319,12 +353,57 @@ export function PerfilClient({ user, company }: Props) {
       <div className="cpv-page" style={{ maxWidth: 680 }}>
         {/* Avatar + heading */}
         <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 32 }}>
-          <span
-            className="cpv-avatar"
-            style={{ width: 56, height: 56, fontSize: 20, background: "var(--azul-eletrico)", flexShrink: 0 }}
-          >
-            {getInitials(userName)}
-          </span>
+          {/* Avatar with upload overlay */}
+          <div style={{ position: "relative", flexShrink: 0 }}>
+            {avatarUrl ? (
+              <Image
+                src={avatarUrl}
+                alt={userName}
+                width={56}
+                height={56}
+                style={{ width: 56, height: 56, borderRadius: "50%", objectFit: "cover", display: "block" }}
+              />
+            ) : (
+              <span
+                className="cpv-avatar"
+                style={{ width: 56, height: 56, fontSize: 20, background: "var(--azul-eletrico)" }}
+              >
+                {getInitials(userName)}
+              </span>
+            )}
+            <button
+              onClick={() => fileInputRef.current?.click()}
+              disabled={avatarPending}
+              title="Trocar foto"
+              style={{
+                position: "absolute",
+                bottom: 0,
+                right: 0,
+                width: 22,
+                height: 22,
+                borderRadius: "50%",
+                background: "var(--card)",
+                border: "1.5px solid var(--border)",
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                color: "var(--foreground)",
+                padding: 0,
+                opacity: avatarPending ? 0.5 : 1,
+              }}
+            >
+              <CameraIcon />
+            </button>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/jpeg,image/png,image/webp"
+              style={{ display: "none" }}
+              onChange={handleAvatarChange}
+            />
+          </div>
+
           <div>
             <h1 style={{ fontFamily: "var(--font-display)", fontWeight: 800, fontSize: 22, color: "var(--tinta)", margin: "0 0 2px" }}>
               {userName}
@@ -332,6 +411,9 @@ export function PerfilClient({ user, company }: Props) {
             <p style={{ margin: 0, fontSize: 13, color: "var(--muted-foreground)" }}>
               {user.email} · {user.role === "ADMIN" ? "Gestor da conta" : "Instrutor"}
             </p>
+            {avatarError && (
+              <p style={{ margin: "4px 0 0", fontSize: 12, color: "var(--destructive)" }}>{avatarError}</p>
+            )}
           </div>
         </div>
 
