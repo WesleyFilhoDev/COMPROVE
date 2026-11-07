@@ -25,10 +25,28 @@ export default function LoginPage() {
 
     const result = await authClient.signIn.email({ email, password });
 
-    setPending(false);
-
     if (result.error) {
+      setPending(false);
       setError(result.error.message ?? "E-mail ou senha incorretos.");
+      return;
+    }
+
+    // Busca a sessão para verificar o papel real do usuário
+    const session = await authClient.getSession();
+    const userRole = (session.data?.user as Record<string, unknown> | null)?.role as string | null;
+
+    // Valida que o perfil selecionado bate com o papel real
+    if (role === "gestor" && userRole !== "ADMIN") {
+      await authClient.signOut();
+      setPending(false);
+      setError('Esta conta é de instrutor. Use o perfil "Entrar como instrutor".');
+      return;
+    }
+
+    if (role === "instrutor" && userRole !== "COLLABORATOR") {
+      await authClient.signOut();
+      setPending(false);
+      setError('Esta conta é de gestor. Use o perfil "Entrar como gestor".');
       return;
     }
 
