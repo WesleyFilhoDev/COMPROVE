@@ -79,6 +79,7 @@ export default async function TreinamentosPage() {
       trainingTypes={serializedTypes}
       collaborators={collaborators}
       isAdmin={user.role === "ADMIN"}
+      currentUserId={user.id}
     />
   );
 }

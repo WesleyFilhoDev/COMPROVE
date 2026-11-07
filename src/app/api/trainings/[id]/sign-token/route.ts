@@ -6,19 +6,27 @@ import { tenantDb } from "@/server/db/tenant";
 export function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   return withAuth({ roles: ["ADMIN", "COLLABORATOR"] }, async (_req, { user }) => {
     const { id } = await params;
+    const url = new URL(req.url);
+    const role = url.searchParams.get("role") === "INSTRUCTOR" ? "INSTRUCTOR" : "TRAINEE";
     const db = tenantDb(user.companyId as string);
 
-    // Busca assinatura existente do treinando
+    // Try to find existing signature for this role
     let signature = await db.signature.findFirst({
-      where: { trainingId: id, signerRole: "TRAINEE" },
+      where: { trainingId: id, signerRole: role },
       select: { signToken: true, status: true, signerName: true },
     });
 
-    // Se não existe (treinamento antigo), cria a assinatura com token
+    // Backward-compat: create if missing (old trainings pre-token)
     if (!signature) {
       const training = await db.training.findFirst({
         where: { id },
-        select: { traineeName: true, companyId: true, status: true },
+        select: {
+          traineeName: true,
+          instructorNameSnapshot: true,
+          instructorId: true,
+          companyId: true,
+          status: true,
+        },
       });
 
       if (!training || training.status === "CANCELED") {
@@ -26,27 +34,30 @@ export function GET(req: NextRequest, { params }: { params: Promise<{ id: string
       }
 
       const signToken = crypto.randomBytes(32).toString("hex");
+      const signerName = role === "INSTRUCTOR"
+        ? training.instructorNameSnapshot
+        : training.traineeName;
 
       const created = await db.signature.create({
         data: {
           companyId: training.companyId,
           trainingId: id,
-          signerRole: "TRAINEE",
-          signerName: training.traineeName,
+          signerRole: role,
+          signerName,
           status: "PENDING",
           signToken,
         },
         select: { signToken: true, status: true },
       });
 
-      signature = { ...created, signerName: training.traineeName };
+      signature = { ...created, signerName };
     }
 
-    // Se token ainda null (registro antigo sem token), gera um agora
+    // Backward-compat: fill missing token on existing record
     if (!signature.signToken) {
       const signToken = crypto.randomBytes(32).toString("hex");
       await db.signature.update({
-        where: { trainingId_signerRole: { trainingId: id, signerRole: "TRAINEE" } },
+        where: { trainingId_signerRole: { trainingId: id, signerRole: role } },
         data: { signToken },
       });
       return NextResponse.json({ signToken, status: signature.status });

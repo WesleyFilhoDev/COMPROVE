@@ -147,7 +147,8 @@ export async function emitTraining(
     templateVersion: 1,
   });
 
-  // 8. Create signatures (INSTRUCTOR + TRAINEE with sign token)
+  // 8. Create signatures (INSTRUCTOR + TRAINEE, both with sign tokens)
+  const instructorToken = crypto.randomBytes(32).toString("hex");
   const traineeToken = crypto.randomBytes(32).toString("hex");
   await tenantDb.signature.createMany({
     data: [
@@ -157,6 +158,7 @@ export async function emitTraining(
         signerRole: "INSTRUCTOR",
         signerName: instructor.name,
         status: "PENDING",
+        signToken: instructorToken,
       },
       {
         companyId,

@@ -41,6 +41,7 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ tok
     signature: {
       id: signature.id,
       signerName: signature.signerName,
+      signerRole: signature.signerRole,
       status: signature.status,
     },
     training: {

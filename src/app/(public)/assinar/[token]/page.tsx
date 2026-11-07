@@ -16,6 +16,8 @@ type TrainingInfo = {
   verificationCode: string;
 };
 
+type SignerRole = "INSTRUCTOR" | "TRAINEE";
+
 function fmt(iso: string) {
   return new Date(iso).toLocaleString("pt-BR", {
     day: "2-digit",
@@ -33,6 +35,7 @@ export default function AssinarPage() {
   const [state, setState] = useState<"loading" | "ready" | "signed" | "error">("loading");
   const [training, setTraining] = useState<TrainingInfo | null>(null);
   const [signerName, setSignerName] = useState("");
+  const [signerRole, setSignerRole] = useState<SignerRole>("TRAINEE");
   const [errorMsg, setErrorMsg] = useState("");
   const [pending, setPending] = useState(false);
   const [agreed, setAgreed] = useState(false);
@@ -44,7 +47,7 @@ export default function AssinarPage() {
           error?: string;
           alreadySigned?: boolean;
           training?: TrainingInfo;
-          signature?: { signerName: string };
+          signature?: { signerName: string; signerRole: SignerRole };
         };
         if (!res.ok) {
           if (data.alreadySigned) { setState("signed"); return; }
@@ -54,6 +57,7 @@ export default function AssinarPage() {
         }
         setTraining(data.training!);
         setSignerName(data.signature!.signerName);
+        setSignerRole(data.signature!.signerRole ?? "TRAINEE");
         setState("ready");
       })
       .catch(() => { setErrorMsg("Erro ao carregar. Verifique sua conexão."); setState("error"); });
@@ -151,13 +155,15 @@ export default function AssinarPage() {
               {/* Header card */}
               <div style={{ ...cardStyle, textAlign: "center", paddingTop: 28 }}>
                 <p style={{ margin: "0 0 4px", fontSize: 12, fontWeight: 600, color: "var(--azul-eletrico)", letterSpacing: "0.08em", textTransform: "uppercase" }}>
-                  Assinatura de treinamento
+                  {signerRole === "INSTRUCTOR" ? "Assinatura do instrutor" : "Assinatura de treinamento"}
                 </p>
                 <h1 style={{ fontFamily: "var(--font-display)", fontWeight: 800, fontSize: 22, color: "var(--tinta)", margin: "0 0 4px" }}>
                   Olá, {signerName}
                 </h1>
                 <p style={{ margin: 0, fontSize: 14, color: "var(--muted-foreground)" }}>
-                  Confirme sua participação no treinamento abaixo.
+                  {signerRole === "INSTRUCTOR"
+                    ? "Confirme que você ministrou o treinamento abaixo."
+                    : "Confirme sua participação no treinamento abaixo."}
                 </p>
               </div>
 
@@ -167,14 +173,24 @@ export default function AssinarPage() {
                   Dados do treinamento
                 </h2>
 
-                {[
-                  ["Tipo", training.trainingType],
-                  ["Instrutor", training.instructor],
-                  ["Empresa", training.company],
-                  ["Cliente", training.clientCompany],
-                  ["Início", fmt(training.startsAt)],
-                  ["Término", fmt(training.endsAt)],
-                ].map(([label, value], i, arr) => (
+                {(signerRole === "INSTRUCTOR"
+                  ? [
+                      ["Tipo", training.trainingType],
+                      ["Treinando", training.traineeName],
+                      ["Empresa", training.company],
+                      ["Cliente", training.clientCompany],
+                      ["Início", fmt(training.startsAt)],
+                      ["Término", fmt(training.endsAt)],
+                    ]
+                  : [
+                      ["Tipo", training.trainingType],
+                      ["Instrutor", training.instructor],
+                      ["Empresa", training.company],
+                      ["Cliente", training.clientCompany],
+                      ["Início", fmt(training.startsAt)],
+                      ["Término", fmt(training.endsAt)],
+                    ]
+                ).map(([label, value], i, arr) => (
                   <div key={label} style={{ ...rowStyle, ...(i === arr.length - 1 ? { borderBottom: "none", marginBottom: 0, paddingBottom: 0 } : {}) }}>
                     <span style={{ fontSize: 13, color: "var(--muted-foreground)", flexShrink: 0 }}>{label}</span>
                     <span style={{ fontSize: 13, fontWeight: 500, color: "var(--foreground)", textAlign: "right" }}>{value}</span>
@@ -192,7 +208,10 @@ export default function AssinarPage() {
                     style={{ marginTop: 2, accentColor: "var(--azul-eletrico)", flexShrink: 0 }}
                   />
                   <span style={{ fontSize: 13, color: "var(--foreground)", lineHeight: 1.5 }}>
-                    Confirmo que participei do treinamento <strong>{training.trainingType}</strong> ministrado por <strong>{training.instructor}</strong> no período indicado acima, e que as informações estão corretas.
+                    {signerRole === "INSTRUCTOR"
+                      ? <>Confirmo que ministrei o treinamento <strong>{training.trainingType}</strong> para <strong>{training.traineeName}</strong> no período indicado acima, e que as informações estão corretas.</>
+                      : <>Confirmo que participei do treinamento <strong>{training.trainingType}</strong> ministrado por <strong>{training.instructor}</strong> no período indicado acima, e que as informações estão corretas.</>
+                    }
                   </span>
                 </label>
 

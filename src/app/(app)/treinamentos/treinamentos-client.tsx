@@ -40,6 +40,7 @@ type Props = {
   trainingTypes: TrainingType[];
   collaborators: Collaborator[];
   isAdmin: boolean;
+  currentUserId: string;
 };
 
 const EMPTY_FORM = {
@@ -1017,6 +1018,7 @@ export function TreinamentosClient({
   trainingTypes,
   collaborators,
   isAdmin,
+  currentUserId,
 }: Props) {
   const [trainings, setTrainings] = useState<TrainingRow[]>(initialTrainings);
   const [search, setSearch] = useState("");
@@ -1054,6 +1056,14 @@ export function TreinamentosClient({
     if (res.ok) {
       const data = (await res.json()) as { signToken: string };
       setSignLinkToken(data.signToken);
+    }
+  }
+
+  async function openInstructorSignLink(t: TrainingRow) {
+    const res = await fetch(`/api/trainings/${t.id}/sign-token?role=INSTRUCTOR`);
+    if (res.ok) {
+      const data = (await res.json()) as { signToken: string };
+      window.open(`/assinar/${data.signToken}`, "_blank");
     }
   }
 
@@ -1297,6 +1307,19 @@ export function TreinamentosClient({
                             >
                               <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 10l3-3 2 2 5-6" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/></svg>
                               {isSigned ? "Ver assinatura" : "Enviar link de assinatura"}
+                            </MenuItem>
+                          );
+                        })()}
+                        {t.status === "ISSUED" && t.instructor.id === currentUserId && (() => {
+                          const instructorSig = t.signatures.find((s) => s.signerRole === "INSTRUCTOR");
+                          const isSigned = instructorSig?.status === "SIGNED";
+                          return (
+                            <MenuItem
+                              onClick={() => openInstructorSignLink(t)}
+                              color={isSigned ? "var(--success)" : "var(--azul-eletrico)"}
+                            >
+                              <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 9l2.5-2.5 1.5 1.5L10 4" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/><path d="M1 12h12" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/></svg>
+                              {isSigned ? "Minha assinatura" : "Assinar como instrutor"}
                             </MenuItem>
                           );
                         })()}
