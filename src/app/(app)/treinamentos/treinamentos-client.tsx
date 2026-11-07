@@ -352,7 +352,7 @@ function NewTrainingPanel({
                 required
                 value={fields.startsAt}
                 onChange={set("startsAt")}
-                style={inputStyle}
+                style={{ ...inputStyle, paddingRight: 8 }}
               />
             </div>
             <div>
@@ -365,7 +365,7 @@ function NewTrainingPanel({
                 required
                 value={fields.endsAt}
                 onChange={set("endsAt")}
-                style={inputStyle}
+                style={{ ...inputStyle, paddingRight: 8 }}
               />
             </div>
           </div>
@@ -841,11 +841,11 @@ function EditTrainingPanel({
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
             <div>
               <label style={labelStyle}>Início</label>
-              <input type="datetime-local" required value={fields.startsAt} onChange={set("startsAt")} style={inputStyle} />
+              <input type="datetime-local" required value={fields.startsAt} onChange={set("startsAt")} style={{ ...inputStyle, paddingRight: 8 }} />
             </div>
             <div>
               <label style={labelStyle}>Término</label>
-              <input type="datetime-local" required value={fields.endsAt} onChange={set("endsAt")} style={inputStyle} />
+              <input type="datetime-local" required value={fields.endsAt} onChange={set("endsAt")} style={{ ...inputStyle, paddingRight: 8 }} />
             </div>
           </div>
 
