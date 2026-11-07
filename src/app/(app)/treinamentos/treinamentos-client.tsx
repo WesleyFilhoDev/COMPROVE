@@ -1224,6 +1224,7 @@ export function TreinamentosClient({
               )}
             </div>
           ) : (
+            <div className="cpv-table-wrap">
             <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
               <thead>
                 <tr style={{ borderBottom: "1px solid var(--border)", background: "var(--nevoa)" }}>
@@ -1323,6 +1324,7 @@ export function TreinamentosClient({
                 ))}
               </tbody>
             </table>
+            </div>
           )}
         </div>
       </div>
