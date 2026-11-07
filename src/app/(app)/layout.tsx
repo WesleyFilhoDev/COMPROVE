@@ -100,17 +100,24 @@ export default async function AppLayout({ children }: { children: React.ReactNod
               />
             </svg>
           </button>
-          <span
+          <Link
+            href="/perfil"
+            title="Meu perfil"
             className="cpv-avatar"
             style={{
               width: 32,
               height: 32,
               fontSize: 12,
               background: "var(--azul-eletrico)",
+              textDecoration: "none",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              color: "#fff",
             }}
           >
             {userInitials}
-          </span>
+          </Link>
         </div>
       </header>
 
