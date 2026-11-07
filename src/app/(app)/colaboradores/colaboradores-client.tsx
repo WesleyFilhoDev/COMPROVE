@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { maskPhone, toE164 } from "@/lib/format";
+import { ConfirmModal } from "@/components/app/confirm-modal";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -596,6 +597,7 @@ export function ColaboradoresClient({
   const [invitations, setInvitations] = useState<RawInvitation[]>(initialInvitations);
   const [actionPending, setActionPending] = useState<string | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
+  const [revokeTargetId, setRevokeTargetId] = useState<string | null>(null);
   const [waLink, setWaLink] = useState<string | null>(null);
   const [search, setSearch] = useState("");
 
@@ -665,11 +667,11 @@ export function ColaboradoresClient({
   }
 
   async function handleRevoke(id: string) {
-    if (!confirm("Tem certeza que deseja revogar este convite?")) return;
     setActionPending(id + ":revoke");
     setActionError(null);
     const res = await fetch(`/api/invitations/${id}/revoke`, { method: "POST" });
     setActionPending(null);
+    setRevokeTargetId(null);
 
     if (!res.ok) {
       const json = await res.json().catch(() => ({})) as { error?: string };
@@ -1102,7 +1104,7 @@ export function ColaboradoresClient({
                                 {actionPending === inv.id + ":resend" ? "Reenviando…" : "Reenviar"}
                               </button>
                               <button
-                                onClick={() => handleRevoke(inv.id)}
+                                onClick={() => setRevokeTargetId(inv.id)}
                                 disabled={actionPending === inv.id + ":revoke"}
                                 style={{
                                   background: "none",
@@ -1244,6 +1246,18 @@ export function ColaboradoresClient({
             handleInvited(link, inv);
             setShowModal(false);
           }}
+        />
+      )}
+
+      {revokeTargetId && (
+        <ConfirmModal
+          title="Revogar convite"
+          message="O colaborador não conseguirá mais usar este link. Você poderá enviar um novo convite quando quiser."
+          confirmLabel="Revogar convite"
+          variant="danger"
+          pending={actionPending === revokeTargetId + ":revoke"}
+          onConfirm={() => handleRevoke(revokeTargetId)}
+          onCancel={() => setRevokeTargetId(null)}
         />
       )}
     </div>

@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
+import { ConfirmModal } from "@/components/app/confirm-modal";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -128,6 +129,7 @@ function Panel({
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
   const [archivePending, setArchivePending] = useState(false);
+  const [showArchiveConfirm, setShowArchiveConfirm] = useState(false);
   const firstInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -183,15 +185,12 @@ function Panel({
     onSaved(json.type);
   }
 
-  async function handleArchive() {
+  async function doArchive() {
     if (!editType) return;
-    if (!confirm(`Arquivar "${editType.name}"? Ele não poderá mais ser usado em novos treinamentos.`))
-      return;
     setArchivePending(true);
-    const res = await fetch(`/api/training-types/${editType.id}`, {
-      method: "DELETE",
-    });
+    const res = await fetch(`/api/training-types/${editType.id}`, { method: "DELETE" });
     setArchivePending(false);
+    setShowArchiveConfirm(false);
     if (res.ok) onArchived(editType.id);
   }
 
@@ -439,7 +438,7 @@ function Panel({
               <button
                 type="button"
                 disabled={archivePending}
-                onClick={handleArchive}
+                onClick={() => setShowArchiveConfirm(true)}
                 title="Arquivar tipo"
                 style={{
                   flexShrink: 0,
@@ -496,6 +495,18 @@ function Panel({
           </div>
         </form>
       </div>
+
+      {showArchiveConfirm && editType && (
+        <ConfirmModal
+          title="Arquivar tipo de treinamento"
+          message={`"${editType.name}" não poderá mais ser usado em novos treinamentos. Esta ação pode ser desfeita depois.`}
+          confirmLabel="Arquivar"
+          variant="warning"
+          pending={archivePending}
+          onConfirm={doArchive}
+          onCancel={() => setShowArchiveConfirm(false)}
+        />
+      )}
     </>
   );
 }

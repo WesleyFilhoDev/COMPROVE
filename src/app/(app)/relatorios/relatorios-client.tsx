@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { ConfirmModal } from "@/components/app/confirm-modal";
 import Link from "next/link";
 
 const MONTH_NAMES = [
@@ -105,6 +106,7 @@ export function RelatoriosClient({ trainings, collaborators, trainingTypes }: Pr
   const [situacao, setSituacao] = useState<string>("all");
   const [page, setPage] = useState(1);
   const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [showExportInfo, setShowExportInfo] = useState(false);
 
   function setThisMonth() {
     const s = new Date(now.getFullYear(), now.getMonth(), 1);
@@ -455,7 +457,7 @@ export function RelatoriosClient({ trainings, collaborators, trainingTypes }: Pr
           </div>
           {selected.size > 0 && (
             <button
-              onClick={() => alert(`Exportar ${selected.size} treinamentos selecionados`)}
+              onClick={() => setShowExportInfo(true)}
               className="cpv-btn cpv-btn--outline cpv-btn--sm"
               style={{ fontSize: 12 }}
             >
@@ -707,6 +709,18 @@ export function RelatoriosClient({ trainings, collaborators, trainingTypes }: Pr
           </div>
         </div>
       </div>
+
+      {showExportInfo && (
+        <ConfirmModal
+          title="Exportar treinamentos"
+          message={`A exportação de ${selected.size} treinamento${selected.size !== 1 ? "s" : ""} ainda não está disponível. Em breve você poderá baixar os dados em CSV ou PDF.`}
+          confirmLabel="Entendido"
+          cancelLabel=""
+          variant="info"
+          onConfirm={() => setShowExportInfo(false)}
+          onCancel={() => setShowExportInfo(false)}
+        />
+      )}
     </>
   );
 }
