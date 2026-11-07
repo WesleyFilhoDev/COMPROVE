@@ -142,6 +142,7 @@ export function Sidebar({ userName, userRole, companyName, companyInitials, user
 
   async function handleLogout() {
     await authClient.signOut();
+    document.documentElement.classList.remove("dark", "theme-ready");
     router.push("/login");
   }
 
