@@ -261,6 +261,8 @@ function InviteModal({
           boxShadow: "var(--shadow-xl, 0 24px 48px rgba(15,26,46,0.18))",
           width: "100%",
           maxWidth: 480,
+          maxHeight: "calc(100dvh - 48px)",
+          overflowY: "auto",
           padding: 32,
           position: "relative",
         }}
@@ -754,7 +756,7 @@ export function ColaboradoresClient({
             </p>
           </div>
           <button
-            className="cpv-btn cpv-btn--primary"
+            className="cpv-btn cpv-btn--primary cpv-hide-mobile"
             onClick={() => setShowModal(true)}
             style={{ display: "flex", alignItems: "center", gap: 6, flexShrink: 0 }}
           >

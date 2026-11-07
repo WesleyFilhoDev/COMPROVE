@@ -235,7 +235,7 @@ function NewTrainingPanel({
   return (
     <>
       <div
-        style={{ position: "fixed", inset: 0, zIndex: 40, background: "rgba(15,26,46,0.3)" }}
+        style={{ position: "fixed", inset: 0, zIndex: 60, background: "rgba(15,26,46,0.3)" }}
         onClick={onClose}
       />
       <div
@@ -244,7 +244,7 @@ function NewTrainingPanel({
           top: 0,
           right: 0,
           bottom: 0,
-          zIndex: 50,
+          zIndex: 70,
           width: "100%",
           maxWidth: 520,
           background: "var(--card)",
@@ -813,8 +813,8 @@ function EditTrainingPanel({
 
   return (
     <>
-      <div style={{ position: "fixed", inset: 0, zIndex: 40, background: "rgba(15,26,46,0.3)" }} onClick={onClose} />
-      <div style={{ position: "fixed", top: 0, right: 0, bottom: 0, zIndex: 50, width: "100%", maxWidth: 520, background: "var(--card)", borderLeft: "1px solid var(--border)", boxShadow: "-8px 0 32px rgba(15,26,46,0.12)", display: "flex", flexDirection: "column", overflowY: "auto" }}>
+      <div style={{ position: "fixed", inset: 0, zIndex: 60, background: "rgba(15,26,46,0.3)" }} onClick={onClose} />
+      <div style={{ position: "fixed", top: 0, right: 0, bottom: 0, zIndex: 70, width: "100%", maxWidth: 520, background: "var(--card)", borderLeft: "1px solid var(--border)", boxShadow: "-8px 0 32px rgba(15,26,46,0.12)", display: "flex", flexDirection: "column", overflowY: "auto" }}>
         <div style={{ padding: "20px 24px 16px", borderBottom: "1px solid var(--border)", display: "flex", alignItems: "center", justifyContent: "space-between", flexShrink: 0 }}>
           <div>
             <h2 style={{ fontFamily: "var(--font-display)", fontWeight: 800, fontSize: 17, color: "var(--tinta)", margin: "0 0 3px" }}>Editar treinamento</h2>
@@ -1133,7 +1133,7 @@ export function TreinamentosClient({
           </p>
           </div>
           <button
-            className="cpv-btn cpv-btn--primary"
+            className="cpv-btn cpv-btn--primary cpv-hide-mobile"
             onClick={() => setShowPanel(true)}
             style={{ display: "flex", alignItems: "center", gap: 6, flexShrink: 0 }}
           >

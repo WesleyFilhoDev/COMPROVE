@@ -512,6 +512,11 @@ input[type="month"] {
   -webkit-overflow-scrolling: touch;
 }
 
+/* Hide on mobile — for elements duplicated between topbar and heading area */
+@media (max-width: 767px) {
+  .cpv-hide-mobile { display: none !important; }
+}
+
 /* ── Avatar initials ── */
 .cpv-avatar {
   display: inline-flex;
