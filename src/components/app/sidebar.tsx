@@ -1,6 +1,7 @@
 "use client";
 
 import { usePathname, useRouter } from "next/navigation";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Logo } from "@/components/logo";
 import { authClient } from "@/lib/auth-client";
@@ -70,11 +71,19 @@ function BarChartIcon() {
   );
 }
 
-function GearIcon() {
+function SunIcon() {
   return (
     <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-      <circle cx="8" cy="8" r="2.5" stroke="currentColor" strokeWidth="1.5" />
+      <circle cx="8" cy="8" r="3" stroke="currentColor" strokeWidth="1.5" />
       <path d="M8 1v1.5M8 13.5V15M15 8h-1.5M2.5 8H1M12.95 3.05l-1.06 1.06M4.11 11.89l-1.06 1.06M12.95 12.95l-1.06-1.06M4.11 4.11 3.05 3.05" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+function MoonIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+      <path d="M13.5 10A6 6 0 0 1 6 2.5a6 6 0 1 0 7.5 7.5Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   );
 }
@@ -103,15 +112,27 @@ const NAV_SECTIONS = [
       { label: "Relatórios", href: "/relatorios", icon: <BarChartIcon /> },
     ],
   },
-  {
-    label: "CONTA",
-    items: [{ label: "Configurações", href: "/configuracoes", icon: <GearIcon /> }],
-  },
 ];
 
 export function Sidebar({ userName, userRole, companyName, companyInitials, userInitials }: SidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
+  const [dark, setDark] = useState(false);
+
+  useEffect(() => {
+    const stored = localStorage.getItem("theme");
+    const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+    const isDark = stored === "dark" || (!stored && prefersDark);
+    setDark(isDark);
+    document.documentElement.classList.toggle("dark", isDark);
+  }, []);
+
+  function toggleDark() {
+    const next = !dark;
+    setDark(next);
+    document.documentElement.classList.toggle("dark", next);
+    localStorage.setItem("theme", next ? "dark" : "light");
+  }
 
   async function handleLogout() {
     await authClient.signOut();
@@ -249,6 +270,42 @@ export function Sidebar({ userName, userRole, companyName, companyInitials, user
           </div>
         ))}
       </nav>
+
+      {/* Dark mode toggle */}
+      <div style={{ padding: "4px 8px 8px" }}>
+        <button
+          onClick={toggleDark}
+          title={dark ? "Mudar para modo claro" : "Mudar para modo escuro"}
+          style={{
+            width: "100%",
+            display: "flex",
+            alignItems: "center",
+            gap: 8,
+            padding: "7px 8px",
+            borderRadius: "var(--radius-md)",
+            border: "none",
+            background: "transparent",
+            color: "var(--sidebar-foreground)",
+            fontSize: 13,
+            fontWeight: 400,
+            cursor: "pointer",
+            transition: "background 0.1s, color 0.1s",
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.background = "var(--sidebar-accent)";
+            e.currentTarget.style.color = "#fff";
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.background = "transparent";
+            e.currentTarget.style.color = "var(--sidebar-foreground)";
+          }}
+        >
+          <span style={{ opacity: 0.75, flexShrink: 0 }}>
+            {dark ? <SunIcon /> : <MoonIcon />}
+          </span>
+          {dark ? "Modo claro" : "Modo escuro"}
+        </button>
+      </div>
 
       {/* Bottom user block */}
       <div style={{ borderTop: "1px solid var(--sidebar-border)", padding: "12px 8px" }}>

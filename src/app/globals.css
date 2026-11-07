@@ -169,6 +169,44 @@
   --graphite-950: #0a1220;
 }
 
+/* ── Dark mode tokens ── */
+.dark {
+  --background: #0d1526;
+  --foreground: #e4eaf5;
+  --card: #131e35;
+  --card-foreground: #e4eaf5;
+  --popover: #131e35;
+  --popover-foreground: #e4eaf5;
+  --primary: #4d7aff;
+  --primary-hover: #3a67f5;
+  --primary-foreground: #ffffff;
+  --secondary: #1a2a50;
+  --secondary-foreground: #c3d0f0;
+  --muted: #1a2540;
+  --muted-foreground: #8899b4;
+  --accent: #1a2a50;
+  --accent-foreground: #8aaeff;
+  --destructive: #e05370;
+  --destructive-foreground: #ffffff;
+  --destructive-soft: #2a1520;
+  --destructive-border: #5a2535;
+  --success: #34c98a;
+  --success-soft: #0d2a1f;
+  --success-border: #1a5540;
+  --warning: #f0a040;
+  --warning-soft: #2a1e08;
+  --warning-border: #5a3a10;
+  --info: #6b8fff;
+  --info-soft: #131e35;
+  --info-border: #1f3570;
+  --border: #1f2f4a;
+  --input: #1f2f4a;
+  --ring: #4d7aff;
+  --link: #6b8fff;
+  --nevoa: #0d1526;
+  --tinta: #e4eaf5;
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;
