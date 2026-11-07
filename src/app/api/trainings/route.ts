@@ -30,6 +30,7 @@ export const POST = withAuth(
     const parsed = trainingCreateSchema.safeParse(body);
 
     if (!parsed.success) {
+      console.error("[trainings POST] validation failed:", JSON.stringify(parsed.error.flatten()));
       return NextResponse.json({ error: parsed.error.flatten() }, { status: 422 });
     }
 

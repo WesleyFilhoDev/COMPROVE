@@ -157,11 +157,18 @@ function NewTrainingPanel({
     setPending(false);
 
     if (!res.ok) {
-      const json = (await res.json()) as { error: string | { formErrors?: string[] } };
-      const msg =
-        typeof json.error === "string"
-          ? json.error
-          : (json.error?.formErrors?.[0] ?? "Erro ao emitir treinamento.");
+      const json = (await res.json()) as {
+        error: string | { formErrors?: string[]; fieldErrors?: Record<string, string[]> };
+      };
+      let msg = "Erro ao emitir treinamento.";
+      if (typeof json.error === "string") {
+        msg = json.error;
+      } else if (json.error?.formErrors?.[0]) {
+        msg = json.error.formErrors[0];
+      } else if (json.error?.fieldErrors) {
+        const first = Object.values(json.error.fieldErrors).flat()[0];
+        if (first) msg = first;
+      }
       setError(msg);
       return;
     }
