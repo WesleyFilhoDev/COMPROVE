@@ -63,7 +63,6 @@ export default async function TreinamentosPage() {
     signatures: t.signatures.map((s) => ({
       signerRole: s.signerRole,
       status: s.status,
-      signToken: s.signToken ?? null,
       signedAt: s.signedAt?.toISOString() ?? null,
     })),
   }));
