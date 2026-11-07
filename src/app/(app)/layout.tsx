@@ -1,11 +1,11 @@
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
-import Link from "next/link";
 import { auth } from "@/server/auth/auth";
 import { findCompanyById } from "@/server/models/company";
 import type { UserRole } from "@/generated/prisma/client";
 import { Sidebar } from "@/components/app/sidebar";
 import { BottomNav } from "@/components/app/bottom-nav";
+import { MobileHeaderActions } from "@/components/app/mobile-header-actions";
 import { Logo } from "@/components/logo";
 
 function getInitials(name: string): string {
@@ -78,48 +78,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
         }}
       >
         <Logo size={24} tone="positive" variant="horizontal" />
-        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-          {/* Bell icon */}
-          <button
-            style={{
-              background: "none",
-              border: "none",
-              cursor: "pointer",
-              color: "var(--muted-foreground)",
-              padding: 4,
-              display: "flex",
-              alignItems: "center",
-            }}
-          >
-            <svg width="20" height="20" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-              <path
-                d="M8 1a5 5 0 0 1 5 5v2.5l1 1.5H2l1-1.5V6a5 5 0 0 1 5-5ZM6.5 13a1.5 1.5 0 0 0 3 0"
-                stroke="currentColor"
-                strokeWidth="1.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-          </button>
-          <Link
-            href="/perfil"
-            title="Meu perfil"
-            className="cpv-avatar"
-            style={{
-              width: 32,
-              height: 32,
-              fontSize: 12,
-              background: "var(--azul-eletrico)",
-              textDecoration: "none",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              color: "#fff",
-            }}
-          >
-            {userInitials}
-          </Link>
-        </div>
+        <MobileHeaderActions userInitials={userInitials} />
       </header>
 
       {/* Main content */}
