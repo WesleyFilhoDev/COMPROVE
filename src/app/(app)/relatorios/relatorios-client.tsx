@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { ConfirmModal } from "@/components/app/confirm-modal";
 import Link from "next/link";
 
 const MONTH_NAMES = [
@@ -106,7 +105,33 @@ export function RelatoriosClient({ trainings, collaborators, trainingTypes }: Pr
   const [situacao, setSituacao] = useState<string>("all");
   const [page, setPage] = useState(1);
   const [selected, setSelected] = useState<Set<string>>(new Set());
-  const [showExportInfo, setShowExportInfo] = useState(false);
+  const [showExportModal, setShowExportModal] = useState(false);
+  const [exportPending, setExportPending] = useState<"csv" | "pdf" | null>(null);
+  const [exportError, setExportError] = useState<string | null>(null);
+
+  async function handleExport(format: "csv" | "pdf") {
+    setExportPending(format);
+    setExportError(null);
+    const ids = Array.from(selected);
+    const res = await fetch("/api/trainings/export", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ ids, format }),
+    });
+    setExportPending(null);
+    if (!res.ok) {
+      setExportError("Erro ao gerar exportação. Tente novamente.");
+      return;
+    }
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = format === "csv" ? "relatorio-treinamentos.csv" : "relatorio-treinamentos.pdf";
+    a.click();
+    URL.revokeObjectURL(url);
+    setShowExportModal(false);
+  }
 
   function setThisMonth() {
     const s = new Date(now.getFullYear(), now.getMonth(), 1);
@@ -457,7 +482,7 @@ export function RelatoriosClient({ trainings, collaborators, trainingTypes }: Pr
           </div>
           {selected.size > 0 && (
             <button
-              onClick={() => setShowExportInfo(true)}
+              onClick={() => setShowExportModal(true)}
               className="cpv-btn cpv-btn--outline cpv-btn--sm"
               style={{ fontSize: 12 }}
             >
@@ -710,16 +735,88 @@ export function RelatoriosClient({ trainings, collaborators, trainingTypes }: Pr
         </div>
       </div>
 
-      {showExportInfo && (
-        <ConfirmModal
-          title="Exportar treinamentos"
-          message={`A exportação de ${selected.size} treinamento${selected.size !== 1 ? "s" : ""} ainda não está disponível. Em breve você poderá baixar os dados em CSV ou PDF.`}
-          confirmLabel="Entendido"
-          cancelLabel=""
-          variant="info"
-          onConfirm={() => setShowExportInfo(false)}
-          onCancel={() => setShowExportInfo(false)}
-        />
+      {showExportModal && (
+        <div
+          style={{ position: "fixed", inset: 0, zIndex: 200, background: "rgba(15,26,46,0.45)", display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }}
+          onClick={(e) => { if (e.target === e.currentTarget && !exportPending) setShowExportModal(false); }}
+        >
+          <div style={{ background: "var(--card)", borderRadius: "var(--radius-xl)", boxShadow: "0 24px 48px rgba(15,26,46,0.18)", width: "100%", maxWidth: 440, padding: 28 }}>
+            <h2 style={{ fontFamily: "var(--font-display)", fontWeight: 800, fontSize: 17, color: "var(--tinta)", margin: "0 0 6px" }}>
+              Exportar treinamentos
+            </h2>
+            <p style={{ margin: "0 0 20px", fontSize: 13, color: "var(--muted-foreground)" }}>
+              {selected.size} treinamento{selected.size !== 1 ? "s" : ""} selecionado{selected.size !== 1 ? "s" : ""}. Escolha o formato:
+            </p>
+
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 20 }}>
+              {/* CSV */}
+              <button
+                onClick={() => handleExport("csv")}
+                disabled={!!exportPending}
+                style={{
+                  border: "2px solid var(--border)",
+                  borderRadius: "var(--radius-lg)",
+                  background: exportPending === "csv" ? "var(--azul-gelo)" : "var(--card)",
+                  padding: "16px 14px",
+                  cursor: exportPending ? "not-allowed" : "pointer",
+                  textAlign: "left",
+                  opacity: exportPending && exportPending !== "csv" ? 0.5 : 1,
+                  transition: "border-color 0.15s, background 0.15s",
+                }}
+                onMouseEnter={(e) => { if (!exportPending) e.currentTarget.style.borderColor = "var(--azul-eletrico)"; }}
+                onMouseLeave={(e) => { if (!exportPending) e.currentTarget.style.borderColor = "var(--border)"; }}
+              >
+                <div style={{ fontSize: 24, marginBottom: 8 }}>📊</div>
+                <div style={{ fontWeight: 700, fontSize: 14, color: "var(--tinta)", marginBottom: 3 }}>
+                  {exportPending === "csv" ? "Gerando…" : "CSV"}
+                </div>
+                <div style={{ fontSize: 12, color: "var(--muted-foreground)" }}>
+                  Abre no Excel e Google Sheets
+                </div>
+              </button>
+
+              {/* PDF */}
+              <button
+                onClick={() => handleExport("pdf")}
+                disabled={!!exportPending}
+                style={{
+                  border: "2px solid var(--border)",
+                  borderRadius: "var(--radius-lg)",
+                  background: exportPending === "pdf" ? "var(--azul-gelo)" : "var(--card)",
+                  padding: "16px 14px",
+                  cursor: exportPending ? "not-allowed" : "pointer",
+                  textAlign: "left",
+                  opacity: exportPending && exportPending !== "pdf" ? 0.5 : 1,
+                  transition: "border-color 0.15s, background 0.15s",
+                }}
+                onMouseEnter={(e) => { if (!exportPending) e.currentTarget.style.borderColor = "var(--azul-eletrico)"; }}
+                onMouseLeave={(e) => { if (!exportPending) e.currentTarget.style.borderColor = "var(--border)"; }}
+              >
+                <div style={{ fontSize: 24, marginBottom: 8 }}>📄</div>
+                <div style={{ fontWeight: 700, fontSize: 14, color: "var(--tinta)", marginBottom: 3 }}>
+                  {exportPending === "pdf" ? "Gerando…" : "PDF"}
+                </div>
+                <div style={{ fontSize: 12, color: "var(--muted-foreground)" }}>
+                  Relatório formatado para impressão
+                </div>
+              </button>
+            </div>
+
+            {exportError && (
+              <p style={{ margin: "0 0 12px", fontSize: 13, color: "var(--destructive)" }}>{exportError}</p>
+            )}
+
+            <div style={{ display: "flex", justifyContent: "flex-end" }}>
+              <button
+                onClick={() => { setShowExportModal(false); setExportError(null); }}
+                disabled={!!exportPending}
+                style={{ background: "none", border: "none", cursor: "pointer", fontSize: 13, fontWeight: 500, color: "var(--muted-foreground)", padding: "0 12px", height: 36 }}
+              >
+                Cancelar
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </>
   );
