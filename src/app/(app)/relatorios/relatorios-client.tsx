@@ -782,7 +782,7 @@ export function RelatoriosClient({ trainings, collaborators, trainingTypes, comp
               {exportTargetIds ? " do filtro atual" : " selecionados"}. Escolha o formato:
             </p>
 
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 20 }}>
+            <div className="cpv-form-2col" style={{ marginBottom: 20 }}>
               {/* CSV */}
               <button
                 onClick={() => handleExport("csv")}

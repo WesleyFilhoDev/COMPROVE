@@ -341,7 +341,7 @@ function NewTrainingPanel({
           </div>
 
           {/* Datas */}
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+          <div className="cpv-form-2col">
             <div>
               <label htmlFor="tt-starts" style={labelStyle}>
                 Início <span style={{ color: "var(--destructive)" }}>*</span>
@@ -407,7 +407,7 @@ function NewTrainingPanel({
                       </button>
                     )}
                   </div>
-                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+                  <div className="cpv-form-2col" style={{ gap: 8 }}>
                     <input
                       type="text"
                       required
@@ -838,7 +838,7 @@ function EditTrainingPanel({
             </select>
           </div>
 
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+          <div className="cpv-form-2col">
             <div>
               <label style={labelStyle}>Início</label>
               <input type="datetime-local" required value={fields.startsAt} onChange={set("startsAt")} style={inputStyle} />
@@ -859,7 +859,7 @@ function EditTrainingPanel({
             <span style={{ display: "block", fontSize: 12, fontWeight: 600, color: "var(--muted-foreground)", marginBottom: 8 }}>
               Treinando (existente)
             </span>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+            <div className="cpv-form-2col" style={{ gap: 8 }}>
               <input type="text" required placeholder="Nome completo" value={fields.traineeName}
                 onChange={set("traineeName")} style={inputStyle} />
               <input type="text" required placeholder="000.000.000-00" maxLength={14} value={fields.traineeCpf}
@@ -878,7 +878,7 @@ function EditTrainingPanel({
                   Remover
                 </button>
               </div>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+              <div className="cpv-form-2col" style={{ gap: 8 }}>
                 <input type="text" required placeholder="Nome completo" value={trainee.name}
                   onChange={(e) => setExtra(idx, "name", e.target.value)} style={inputStyle} />
                 <input type="text" required placeholder="000.000.000-00" maxLength={14} value={trainee.cpf}
@@ -1090,13 +1090,13 @@ export function TreinamentosClient({
     <div className="flex-1 min-h-screen" style={{ background: "var(--nevoa)" }}>
       {/* Sticky top bar */}
       <div
+        className="cpv-topbar"
         style={{
           position: "sticky",
           top: 0,
           zIndex: 10,
           background: "var(--card)",
           borderBottom: "1px solid var(--border)",
-          padding: "0 32px",
           height: 56,
           display: "flex",
           alignItems: "center",
@@ -1121,7 +1121,7 @@ export function TreinamentosClient({
       </div>
 
       {/* Page body */}
-      <div style={{ padding: "28px 32px", maxWidth: 1100 }}>
+      <div className="cpv-page" style={{ maxWidth: 1100 }}>
         {/* Heading */}
         <div style={{ marginBottom: 24, display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 16 }}>
           <div>
@@ -1144,7 +1144,7 @@ export function TreinamentosClient({
 
         {/* Filters */}
         <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 20, flexWrap: "wrap" }}>
-          <div style={{ position: "relative", maxWidth: 320 }}>
+          <div style={{ position: "relative", width: "100%", maxWidth: 320 }}>
             <span
               style={{
                 position: "absolute",
@@ -1163,7 +1163,7 @@ export function TreinamentosClient({
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               style={{
-                width: 320,
+                width: "100%",
                 height: 36,
                 padding: "0 12px 0 36px",
                 border: "1px solid var(--border)",

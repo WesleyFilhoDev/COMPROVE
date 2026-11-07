@@ -278,13 +278,13 @@ export function PerfilClient({ user, company }: Props) {
     <div className="flex-1 min-h-screen" style={{ background: "var(--nevoa)" }}>
       {/* Sticky top bar */}
       <div
+        className="cpv-topbar"
         style={{
           position: "sticky",
           top: 0,
           zIndex: 10,
           background: "var(--card)",
           borderBottom: "1px solid var(--border)",
-          padding: "0 32px",
           height: 56,
           display: "flex",
           alignItems: "center",
@@ -300,7 +300,7 @@ export function PerfilClient({ user, company }: Props) {
       </div>
 
       {/* Page body */}
-      <div style={{ padding: "28px 32px", maxWidth: 680 }}>
+      <div className="cpv-page" style={{ maxWidth: 680 }}>
         {/* Avatar + heading */}
         <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 32 }}>
           <span

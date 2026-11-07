@@ -470,6 +470,48 @@ input[type="month"] {
   .lp-anatomy-item:last-child { border-bottom: none !important; }
 }
 
+/* ── App page responsive layout ── */
+.cpv-topbar {
+  padding-left: 16px;
+  padding-right: 16px;
+}
+@media (min-width: 768px) {
+  .cpv-topbar { padding-left: 32px; padding-right: 32px; }
+}
+
+.cpv-page {
+  padding: 20px 16px;
+}
+@media (min-width: 768px) {
+  .cpv-page { padding: 28px 32px; }
+}
+
+/* Two-column layout section — stacks on mobile */
+.cpv-2col {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+}
+@media (min-width: 640px) {
+  .cpv-2col { grid-template-columns: 1fr 1fr; gap: 20px; }
+}
+
+/* Two-column form grid inside panels/modals — stacks on small screens */
+.cpv-form-2col {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 8px;
+}
+@media (min-width: 480px) {
+  .cpv-form-2col { grid-template-columns: 1fr 1fr; gap: 12px; }
+}
+
+/* Scrollable table wrapper */
+.cpv-table-wrap {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
 /* ── Avatar initials ── */
 .cpv-avatar {
   display: inline-flex;

@@ -213,10 +213,10 @@ export default async function DashboardPage() {
     <div style={{ padding: "0" }}>
       {/* Top bar */}
       <div
+        className="cpv-topbar"
         style={{
           background: "var(--card)",
           borderBottom: "1px solid var(--border)",
-          padding: "0 32px",
           height: 56,
           display: "flex",
           alignItems: "center",
@@ -259,7 +259,7 @@ export default async function DashboardPage() {
       </div>
 
       {/* Page content */}
-      <div style={{ padding: "28px 32px", maxWidth: 1200 }}>
+      <div className="cpv-page" style={{ maxWidth: 1200 }}>
         {/* Greeting row */}
         <div
           style={{
@@ -561,12 +561,8 @@ export default async function DashboardPage() {
 
         {/* Two-column section */}
         <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "1fr 1fr",
-            gap: 20,
-            marginBottom: 28,
-          }}
+          className="cpv-2col"
+          style={{ marginBottom: 28 }}
         >
           {/* Trainings by instructor */}
           <div

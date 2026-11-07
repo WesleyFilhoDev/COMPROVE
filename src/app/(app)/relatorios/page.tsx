@@ -98,10 +98,10 @@ export default async function RelatoriosPage() {
     <div>
       {/* Top bar */}
       <div
+        className="cpv-topbar"
         style={{
           background: "var(--card)",
           borderBottom: "1px solid var(--border)",
-          padding: "0 32px",
           height: 56,
           display: "flex",
           alignItems: "center",
@@ -140,7 +140,7 @@ export default async function RelatoriosPage() {
       </div>
 
       {/* Page content */}
-      <div style={{ padding: "28px 32px", maxWidth: 1200 }}>
+      <div className="cpv-page" style={{ maxWidth: 1200 }}>
 
         <RelatoriosClient
           trainings={serializedTrainings}

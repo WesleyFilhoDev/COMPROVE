@@ -582,13 +582,13 @@ export function TiposClient({ companyName, initialTypes }: Props) {
     <div className="flex-1 min-h-screen" style={{ background: "var(--nevoa)" }}>
       {/* Sticky top bar */}
       <div
+        className="cpv-topbar"
         style={{
           position: "sticky",
           top: 0,
           zIndex: 10,
           background: "var(--card)",
           borderBottom: "1px solid var(--border)",
-          padding: "0 32px",
           height: 56,
           display: "flex",
           alignItems: "center",
@@ -621,7 +621,7 @@ export function TiposClient({ companyName, initialTypes }: Props) {
       </div>
 
       {/* Page body */}
-      <div style={{ padding: "28px 32px", maxWidth: 1100 }}>
+      <div className="cpv-page" style={{ maxWidth: 1100 }}>
         {/* Heading */}
         <div style={{ marginBottom: 24, display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 16 }}>
           <div>
@@ -762,6 +762,7 @@ export function TiposClient({ companyName, initialTypes }: Props) {
                   : "Nenhum tipo arquivado."}
             </div>
           ) : (
+            <div className="cpv-table-wrap">
             <table
               style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}
             >
@@ -876,6 +877,7 @@ export function TiposClient({ companyName, initialTypes }: Props) {
                 ))}
               </tbody>
             </table>
+            </div>
           )}
         </div>
       </div>
