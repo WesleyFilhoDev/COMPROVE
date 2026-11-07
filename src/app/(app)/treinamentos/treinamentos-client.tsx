@@ -674,7 +674,7 @@ export function TreinamentosClient({
             onChange={(e) => setFilterStatus(e.target.value as TrainingStatus | "")}
             style={{
               height: 36,
-              padding: "0 12px",
+              padding: "0 32px 0 12px",
               border: "1px solid var(--border)",
               borderRadius: "var(--radius-md)",
               background: "var(--card)",
