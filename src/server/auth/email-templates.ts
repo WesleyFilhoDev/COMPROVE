@@ -1,6 +1,5 @@
 const BASE_URL = (process.env.NEXT_PUBLIC_APP_URL ?? process.env.BETTER_AUTH_URL ?? "https://comproved.com.br").replace(/\/$/, "");
 
-const LOGO_B64 = "PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjggOCAzMiAzMiIgd2lkdGg9IjQwIiBoZWlnaHQ9IjQwIj48cmVjdCB4PSI4IiB5PSI4IiB3aWR0aD0iMzIiIGhlaWdodD0iMzIiIHJ4PSI3IiBmaWxsPSIjMGIxYjNmIi8+PHBhdGggZD0iTTMwLjg4IDE0LjE3QTEyIDEyIDAgMSAwIDMwLjg4IDMzLjgzIiBmaWxsPSJub25lIiBzdHJva2U9IiNGRkZGRkYiIHN0cm9rZS13aWR0aD0iNC41Ii8+PHBhdGggZD0iTTE2LjUgMjRMMjEuNSAyOUwzNi41IDE4IiBmaWxsPSJub25lIiBzdHJva2U9IiM2QjhGRkYiIHN0cm9rZS13aWR0aD0iNCIvPjwvc3ZnPg==";
 
 function layout(content: string): string {
   return `<!DOCTYPE html>
@@ -17,7 +16,7 @@ function layout(content: string): string {
             <table cellpadding="0" cellspacing="0" style="margin:0 auto;">
               <tr>
                 <td style="vertical-align:middle;padding-right:12px;">
-                  <img src="data:image/svg+xml;base64,${LOGO_B64}" width="40" height="40" alt="Comproved" style="display:block;border-radius:8px;" />
+                  <img src="${BASE_URL}/logo-email.svg" width="40" height="40" alt="Comproved" style="display:block;border-radius:8px;" />
                 </td>
                 <td style="vertical-align:middle;">
                   <span style="font-size:22px;font-weight:800;color:#ffffff;letter-spacing:-0.03em;">Comproved</span>
