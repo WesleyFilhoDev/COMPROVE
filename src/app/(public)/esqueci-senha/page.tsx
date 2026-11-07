@@ -23,10 +23,8 @@ export default function EsqueciSenhaPage() {
 
     setPending(false);
 
-    // Sempre mostra sucesso — nunca revelar se o e-mail está cadastrado (email enumeration)
-    if (result.error && result.error.status === 0) {
-      // Apenas erros de rede chegam aqui; erros de "usuário não encontrado" são silenciados
-      setError("Falha de conexão. Verifique sua internet e tente novamente.");
+    if (result.error) {
+      setError(result.error.message ?? `Erro ${result.error.status ?? ""}`);
       return;
     }
 

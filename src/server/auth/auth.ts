@@ -7,9 +7,12 @@ import { otpEmail, resetPasswordEmail, verifyEmailTemplate } from "./email-templ
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
+const appUrl = (process.env.NEXT_PUBLIC_APP_URL ?? process.env.BETTER_AUTH_URL ?? "http://localhost:3000").replace(/\/$/, "");
+
 export const auth = betterAuth({
-  baseURL: process.env.BETTER_AUTH_URL,
+  baseURL: appUrl,
   secret: process.env.BETTER_AUTH_SECRET,
+  trustedOrigins: [appUrl],
 
   database: prismaAdapter(db, { provider: "postgresql" }),
 
