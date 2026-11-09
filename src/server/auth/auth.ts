@@ -12,7 +12,11 @@ const appUrl = (process.env.NEXT_PUBLIC_APP_URL ?? process.env.BETTER_AUTH_URL ?
 export const auth = betterAuth({
   baseURL: appUrl,
   secret: process.env.BETTER_AUTH_SECRET,
-  trustedOrigins: [appUrl],
+  trustedOrigins: [
+    appUrl,
+    "https://comproved.com.br",
+    "https://www.comproved.com.br",
+  ],
 
   database: prismaAdapter(db, { provider: "postgresql" }),
 
